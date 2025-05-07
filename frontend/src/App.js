@@ -1,21 +1,25 @@
-import React, { useEffect, useState } from 'react';
+import { useState } from 'react';
 import './App.css';
 
 function App() {
-  const [message, setMessage] = useState('');
+  const [response, setResponse] = useState('');
 
-  useEffect(() => {
-    // Fetch the message from the backend
-    fetch('http://localhost:5000')
-      .then((response) => response.text())
-      .then((data) => setMessage(data))
-      .catch((error) => console.error('Error:', error));
-  }, []);
+  const pingBackend = async () => {
+    try {
+      const res = await fetch('http://localhost:50001/');
+      const text = await res.text();
+      setResponse(text);
+    } catch (err) {
+      setResponse('Error connecting to backend');
+      console.error(err);
+    }
+  };
 
   return (
     <div className="App">
-      <h1>Stop the Bus Game v1</h1>
-      <p>{message}</p>
+      <h1>Stop the Bus</h1>
+      <button onClick={pingBackend}>Ping Backend</button>
+      <p>{response}</p>
     </div>
   );
 }

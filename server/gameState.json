@@ -1,0 +1,35 @@
+{
+  "players": [],
+  "currentRound": 1,
+  "scores": {},
+  "gameStarted": false,
+  "categories": [
+    "Boy",
+    "Girl",
+    "Country",
+    "Food",
+    "Colour",
+    "Car",
+    "Movie / TV Show"
+  ],
+  "submissions": {
+    "test2": {
+      "Boy": "sada",
+      "Girl": "asdas",
+      "Country": "dasd",
+      "Food": "asdsad",
+      "Colour": "asdd",
+      "Car": "asdsa",
+      "Movie / TV Show": "dasd"
+    },
+    "hello": {
+      "Boy": "fuck",
+      "Girl": "fuck",
+      "Country": "fuck1",
+      "Food": "fuck",
+      "Colour": "fuck",
+      "Car": "fuck",
+      "Movie / TV Show": "fuck"
+    }
+  }
+}

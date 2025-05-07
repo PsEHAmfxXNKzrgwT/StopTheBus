@@ -1,99 +1,168 @@
 const express = require('express');
-const app = express();
-const PORT = process.env.PORT || 5000;
+const fs = require('fs');
 const cors = require('cors');
 
-app.use(express.json());
+const app = express();
+const PORT = process.env.PORT || 6464;
+
 app.use(cors());
+app.use(express.json());
 
-app.get('/', (req, res) => {
-  res.send('Stop the Bus backend is running!');
-});
-
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server running on port ${PORT}`);
-});
-
-// Game state with categories, players, and scores
 let gameState = {
   players: [],
   currentRound: 1,
   scores: {},
   gameStarted: false,
-  categories: ['Boy', 'Girl', 'Country', 'Food', 'Colour', 'Car', 'Movie / TV Show'], // 7 categories
+  categories: ['Boy', 'Girl', 'Country', 'Food', 'Colour', 'Car', 'Movie / TV Show'],
+  submissions: {},
 };
 
-// Start the game
-app.post('/start-game', (req, res) => {
-  gameState.gameStarted = true;
-  gameState.players = []; // Empty players for a fresh game
-  gameState.scores = {};
-  gameState.currentRound = 1;
-  res.status(200).json(gameState); // Return updated game state
+// Load previous state if available
+function loadGameState() {
+  try {
+    const data = fs.readFileSync('gameState.json');
+    return JSON.parse(data);
+  } catch (err) {
+    console.warn('⚠️ No saved gameState.json found, starting fresh.');
+    return gameState;
+  }
+}
+
+// Save state to file
+function saveGameState() {
+  fs.writeFileSync('gameState.json', JSON.stringify(gameState, null, 2));
+}
+
+gameState = loadGameState();
+
+// Auto-save middleware
+app.use((req, res, next) => {
+  saveGameState();
+  next();
 });
 
-// Add a player
+app.get('/', (req, res) => {
+  res.send('🚦 Stop the Bus backend is running!');
+});
+
+// Add player
 app.post('/add-player', (req, res) => {
   const { playerName } = req.body;
+  if (!playerName) return res.status(400).send("❌ Player name is required.");
 
-  if (!playerName) {
-    return res.status(400).send("Player name is required.");
+  if (gameState.players.includes(playerName)) {
+    return res.status(400).send("❌ Player already exists.");
   }
 
   if (!gameState.gameStarted) {
     gameState.players.push(playerName);
-    gameState.scores[playerName] = 0; // Initialize score
-    res.status(200).json(gameState); // Return updated game state
+    gameState.scores[playerName] = 0;
+    res.status(200).json({ message: "✅ Player added.", gameState });
   } else {
-    res.status(400).send("Game has already started!");
+    res.status(400).send("❌ Game already started.");
   }
 });
 
-// Start round (for simplicity, just increment the round)
+// Start game
+app.post('/start-game', (req, res) => {
+  if (gameState.players.length < 1) {
+    return res.status(400).send("❌ At least 1 player is required.");
+  }
+
+  gameState.gameStarted = true;
+  gameState.currentRound = 1;
+  gameState.submissions = {};
+  gameState.scores = gameState.players.reduce((acc, player) => {
+    acc[player] = 0;
+    return acc;
+  }, {});
+
+  res.status(200).send("🎮 Game started!");
+});
+
+// Start round
 app.post('/start-round', (req, res) => {
-  if (gameState.players.length < 2) {
-    return res.status(400).send("At least two players are required to start the round.");
-  }
-
   if (!gameState.gameStarted) {
-    return res.status(400).send("Game not started yet.");
+    return res.status(400).send("❌ Game has not started.");
   }
 
-  const currentCategory = gameState.categories[gameState.currentRound - 1];
-  gameState.currentRound++;
+  const categoryIndex = gameState.currentRound - 1;
+  if (categoryIndex >= gameState.categories.length) {
+    return res.status(400).send("✅ Game has finished all rounds.");
+  }
 
-  res.status(200).json({ currentCategory, currentRound: gameState.currentRound });
+  const currentCategory = gameState.categories[categoryIndex];
+  res.status(200).json({
+    currentCategory,
+    currentRound: gameState.currentRound,
+  });
 });
 
-app.use(express.json()); // Needed to parse JSON body
-
-// Store submitted answers (in-memory)
-gameState.submissions = {};
-
+// Submit answers
 app.post('/submit-answers', (req, res) => {
   const { playerName, answers } = req.body;
 
-  if (!gameState.players.includes(playerName)) {
-    return res.status(400).send('Player not found');
+  if (!playerName || !answers) {
+    return res.status(400).send("❌ playerName and answers are required.");
+  }
+
+  const requiredCategories = gameState.categories;
+  const allFilled = requiredCategories.every(
+    (cat) => answers[cat] && answers[cat].trim() !== ''
+  );
+
+  if (!allFilled) {
+    return res.status(400).send("❌ All categories must be answered.");
   }
 
   gameState.submissions[playerName] = answers;
-  res.status(200).send('Answers submitted successfully');
+  console.log(`📨 Received answers from ${playerName}:`, answers);
+
+  res.status(200).send("✅ Answers submitted successfully.");
 });
 
+// Get submissions
+app.get('/submissions', (req, res) => {
+  res.status(200).json(gameState.submissions || {});
+});
 
-// Update scores for a player in the current round
+// Update score
 app.post('/update-score', (req, res) => {
   const { playerName, score } = req.body;
 
   if (!gameState.players.includes(playerName)) {
-    return res.status(400).send(`${playerName} is not a valid player.`);
+    return res.status(400).send("❌ Invalid player.");
   }
 
-  if (!score && score !== 0) {
-    return res.status(400).send("Score is required.");
+  if (typeof score !== 'number') {
+    return res.status(400).send("❌ Score must be a number.");
   }
 
   gameState.scores[playerName] += score;
-  res.status(200).json(gameState);
+  res.status(200).json({ message: "✅ Score updated.", scores: gameState.scores });
+});
+
+// Start next round
+app.post('/next-round', (req, res) => {
+  if (!gameState.gameStarted) {
+    return res.status(400).send("❌ Game not started.");
+  }
+
+  if (gameState.currentRound >= gameState.categories.length) {
+    return res.status(400).send("✅ All rounds are complete.");
+  }
+
+  gameState.currentRound++;
+  const newCategory = gameState.categories[gameState.currentRound - 1];
+
+  res.status(200).json({
+    message: "➡️ Next round started!",
+    currentCategory: newCategory,
+    currentRound: gameState.currentRound,
+  });
+});
+
+// Start server
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 Server running on http://localhost:${PORT}`);
 });

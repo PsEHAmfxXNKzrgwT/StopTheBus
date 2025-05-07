@@ -1,144 +1,137 @@
-import React, { useState, useEffect } from 'react';
-import './App.css';
+import React, { useState } from 'react';
+import './App.css';  // Optional: your styling file
 
 function App() {
+  const [gameState, setGameState] = useState({
+    currentRound: 1,
+    scores: {},
+    gameStarted: false,
+    categories: ['Boy', 'Girl', 'Country', 'Food', 'Colour', 'Car', 'Movie / TV Show'],
+  });
+
   const [playerName, setPlayerName] = useState('');
-  const [players, setPlayers] = useState([]);
-  const [gameStarted, setGameStarted] = useState(false);
-  const [message, setMessage] = useState('');
-  const [gameState, setGameState] = useState(null);
   const [answers, setAnswers] = useState({});
-  
+  const [message, setMessage] = useState('');
+
+  const handleInputChange = (category, value) => {
+    setAnswers((prevAnswers) => ({
+      ...prevAnswers,
+      [category]: value,
+    }));
+  };
+
+  const handlePlayerNameChange = (e) => {
+    setPlayerName(e.target.value);
+  };
 
   const handleSubmitAnswers = async () => {
+    console.log("Submitting answers with player name:", playerName);
+    const allCategoriesAnswered = gameState.categories.every(
+      (category) => answers[category] && answers[category].trim() !== ''
+    );
+
+    console.log("Checking answers: ", { answers, allCategoriesAnswered });
+
+    if (!playerName || !allCategoriesAnswered) {
+      setMessage("❌ Please provide a player name and answers for all categories.");
+      console.warn("Submission blocked: Missing name or answers.", {
+        playerName,
+        answers,
+      });
+      return;
+    }
+
+    // If everything is valid, proceed to submit
     try {
-      const response = await fetch('http://localhost:50001/submit-answers', {
+      console.log("🚀 Submitting answers:", { playerName, answers });
+
+      const response = await fetch('http://localhost:6464/submit-answers', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ playerName, answers }),
       });
-  
-      const data = await response.text();
-      setMessage(data); // show response message
-    } catch (error) {
-      setMessage('Error submitting answers.');
-    }
-  };
-  
-
-  const handleAddPlayer = async () => {
-    if (!playerName) return;
-
-    try {
-      const response = await fetch('http://localhost:50001/add-player', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ playerName }),
-      });
-
-      const text = await response.text();
-      setMessage(text);
 
       if (response.ok) {
-        setPlayers((prev) => [...prev, playerName]);
-        setPlayerName('');
+        const data = await response.text();
+        setMessage("✅ " + data);
+      } else {
+        setMessage('❌ Failed to submit answers. Please try again.');
       }
     } catch (error) {
-      setMessage('Error adding player.');
+      console.error("❌ Error submitting answers:", error);
+      setMessage('❌ Error submitting answers.');
     }
   };
 
-  const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-const randomLetter = alphabet[Math.floor(Math.random() * alphabet.length)];
-
-const handleStartGame = async () => {
-  try {
-    const response = await fetch('http://localhost:50001/start-game', {
-      method: 'POST',
-    });
-
-    const data = await response.json();
-    data.letter = randomLetter; // Add the letter to game state
-    setGameState(data);
-    setGameStarted(true);
-    setMessage('Game started!');
-  } catch (error) {
-    setMessage('Error starting game.');
-  }
-};
-
-  
-
   return (
-    <div className="App">
-      <h1>🚌 Stop the Bus</h1>
-  
-      {!gameStarted && (
-        <>
+    <div className="app-container">
+      <h1>🎒 Stop the Bus</h1>
+
+      {/* Player Name Section */}
+      {!gameState.gameStarted && (
+        <div className="player-name-container">
+          <h2>👤 Enter Player Name</h2>
           <input
             type="text"
             value={playerName}
-            onChange={(e) => setPlayerName(e.target.value)}
-            placeholder="Enter player name"
+            onChange={handlePlayerNameChange}
+            placeholder="Enter your name"
           />
-          <button onClick={handleAddPlayer}>Add Player</button>
-          <button onClick={handleStartGame}>Start Game</button>
-        </>
-      )}
-  
-      {message && <p>{message}</p>}
-  
-      <h2>Players:</h2>
-      <ul>
-        {players.map((name, index) => (
-          <li key={index}>{name}</li>
-        ))}
-      </ul>
-  
-      {gameStarted && <h2>Game has started! 🚀</h2>}
-  
-      {/* 👉 INSERT the gameState block here */}
-      {gameState && (
-        <div>
-          <h3>Game Info</h3>
-          <p><strong>Round:</strong> {gameState.currentRound}</p>
-          <p><strong>Players:</strong></p>
-          <ul>
-            {gameState.players.map((player, index) => (
-              <li key={index}>
-                {player} (Score: {gameState.scores[player]})
-              </li>
-            ))}
-          </ul>
-          <p><strong>Categories:</strong> {gameState.categories.join(', ')}</p>
-          <h3>Letter: {gameState.letter}</h3>
 
-<h3>Enter Answers:</h3>
-<form>
-  {gameState.categories.map((category, index) => (
-    <div key={index}>
-      <label>{category}:</label>
-      <input
-        type="text"
-        value={answers[category] || ''}
-        onChange={(e) =>
-          setAnswers({ ...answers, [category]: e.target.value })
-        }
-      />
-    </div>
-  ))}
-  <button type="button" onClick={handleSubmitAnswers}>
-  Submit Answers
-</button>
-</form>
-
+          {/* Start Game Button */}
+          <button
+            onClick={() => {
+              if (playerName) {
+                setGameState((prevState) => ({
+                  ...prevState,
+                  gameStarted: true,
+                }));
+                setMessage("🎮 Game started!");
+              } else {
+                setMessage("❌ You need to enter a player name.");
+              }
+            }}
+          >
+            🚀 Start Game
+          </button>
         </div>
       )}
+
+      {/* Game Info */}
+      {gameState.gameStarted && (
+        <div className="game-info">
+          <h3>🎲 Game Info</h3>
+          <p><strong>🕒 Round:</strong> {gameState.currentRound}</p>
+          <p><strong>👥 Player:</strong> {playerName}</p>
+          <p><strong>📋 Categories:</strong> {gameState.categories.join(', ')}</p>
+        </div>
+      )}
+
+      {/* Category Input Fields */}
+      {gameState.gameStarted && (
+        <div className="category-inputs">
+          {gameState.categories.map((category) => (
+            <div key={category} className="category-input-box">
+              <label><strong>{category}</strong></label>
+              <input
+                type="text"
+                value={answers[category] || ''}
+                onChange={(e) => handleInputChange(category, e.target.value)}
+              />
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Submit Button */}
+      {gameState.gameStarted && (
+        <button onClick={handleSubmitAnswers}>📤 Submit Answers</button>
+      )}
+
+      {/* Message Display */}
+      {message && <div className="message">{message}</div>}
     </div>
   );
-  
 }
 
 export default App;

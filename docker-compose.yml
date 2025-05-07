@@ -4,7 +4,9 @@ services:
   server:
     build: ./server
     ports:
-      - "50001:5000"
+      - "6464:6464"
+    environment:
+      - PORT=6464   
     volumes:
       - ./server:/app
     restart: always

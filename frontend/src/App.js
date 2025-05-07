@@ -14,7 +14,7 @@ function App() {
 
   return (
     <div className="App">
-      <h1>Stop the Bus Game</h1>
+      <h1>Stop the Bus Game v1</h1>
       <p>{message}</p>
     </div>
   );

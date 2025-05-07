@@ -1,0 +1,451 @@
+{
+  "2827": {
+    "gameId": "2827",
+    "players": [
+      "test1",
+      "test2"
+    ],
+    "gameStarted": true,
+    "currentRound": 1,
+    "categories": [
+      "Boy",
+      "Girl",
+      "Country",
+      "Food",
+      "Colour",
+      "Car",
+      "Movie / TV Show"
+    ],
+    "submissions": {
+      "test2": {
+        "Boy": "1",
+        "Girl": "2",
+        "Country": "j",
+        "Food": "u",
+        "Colour": "ji",
+        "Car": "ji",
+        "Movie / TV Show": "ji"
+      }
+    },
+    "scores": {
+      "test1": 0,
+      "test2": 0
+    }
+  },
+  "2993": {
+    "gameId": "2993",
+    "players": [
+      "main_man",
+      "test2"
+    ],
+    "gameStarted": true,
+    "currentRound": 1,
+    "categories": [
+      "Boy",
+      "Girl",
+      "Country",
+      "Food",
+      "Colour",
+      "Car",
+      "Movie / TV Show"
+    ],
+    "submissions": {},
+    "scores": {
+      "main_man": 0,
+      "test2": 0
+    }
+  },
+  "6424": {
+    "gameId": "6424",
+    "players": [
+      "test2",
+      "testiest"
+    ],
+    "gameStarted": true,
+    "currentRound": 1,
+    "categories": [
+      "Boy",
+      "Girl",
+      "Country",
+      "Food",
+      "Colour",
+      "Car",
+      "Movie / TV Show"
+    ],
+    "submissions": {},
+    "scores": {
+      "test2": 0,
+      "testiest": 0
+    }
+  },
+  "6752": {
+    "gameId": "6752",
+    "players": [
+      "Test1",
+      "Test2"
+    ],
+    "gameStarted": true,
+    "currentRound": 1,
+    "categories": [
+      "Boy",
+      "Girl",
+      "Country",
+      "Food",
+      "Colour",
+      "Car",
+      "Movie / TV Show"
+    ],
+    "submissions": {
+      "Test1": {
+        "Boy": "1",
+        "Girl": "jj",
+        "Country": "ijij",
+        "Food": "jij",
+        "Colour": "ij",
+        "Car": "ijij",
+        "Movie / TV Show": "ij"
+      },
+      "Test2": {
+        "Boy": "lll",
+        "Girl": "llll",
+        "Country": "llll",
+        "Food": "llll",
+        "Colour": "lll",
+        "Car": "lll",
+        "Movie / TV Show": "lll"
+      }
+    },
+    "scores": {
+      "Test1": 0,
+      "Test2": 0
+    }
+  },
+  "9845": {
+    "gameId": "9845",
+    "players": [
+      "test1"
+    ],
+    "gameStarted": true,
+    "currentRound": 1,
+    "categories": [
+      "Boy",
+      "Girl",
+      "Country",
+      "Food",
+      "Colour",
+      "Car",
+      "Movie / TV Show"
+    ],
+    "submissions": {
+      "test1": {
+        "Boy": "hi",
+        "Girl": "hi",
+        "Country": "hi",
+        "Food": "ji",
+        "Colour": "oj",
+        "Car": "joj",
+        "Movie / TV Show": "ojoij"
+      }
+    },
+    "scores": {
+      "test1": 0
+    }
+  },
+  "a0b8e26a-518a-490f-b84b-fc6d23b36746": {
+    "gameId": "a0b8e26a-518a-490f-b84b-fc6d23b36746",
+    "players": [
+      "penis",
+      "huiii"
+    ],
+    "gameStarted": true,
+    "currentRound": 1,
+    "categories": [
+      "Boy",
+      "Girl",
+      "Country",
+      "Food",
+      "Colour",
+      "Car",
+      "Movie / TV Show"
+    ],
+    "submissions": {
+      "huiii": {
+        "Boy": "hi",
+        "Girl": "hi",
+        "Country": "hi",
+        "Food": "hi",
+        "Colour": "hi",
+        "Car": "hi",
+        "Movie / TV Show": "hi"
+      }
+    },
+    "scores": {
+      "penis": 0,
+      "huiii": 0
+    }
+  },
+  "53a87bb6-96c2-4e1b-b34f-e8b58a5c6769": {
+    "gameId": "53a87bb6-96c2-4e1b-b34f-e8b58a5c6769",
+    "players": [
+      "penis"
+    ],
+    "gameStarted": false,
+    "currentRound": 1,
+    "categories": [
+      "Boy",
+      "Girl",
+      "Country",
+      "Food",
+      "Colour",
+      "Car",
+      "Movie / TV Show"
+    ],
+    "submissions": {},
+    "scores": {
+      "penis": 0
+    }
+  },
+  "b26f4205-85ca-4fc4-8791-bd831b036116": {
+    "gameId": "b26f4205-85ca-4fc4-8791-bd831b036116",
+    "players": [
+      "penis"
+    ],
+    "gameStarted": false,
+    "currentRound": 1,
+    "categories": [
+      "Boy",
+      "Girl",
+      "Country",
+      "Food",
+      "Colour",
+      "Car",
+      "Movie / TV Show"
+    ],
+    "submissions": {},
+    "scores": {
+      "penis": 0
+    }
+  },
+  "3190d666-2f39-40c6-9ca0-2c696602a72c": {
+    "gameId": "3190d666-2f39-40c6-9ca0-2c696602a72c",
+    "players": [
+      "penis"
+    ],
+    "gameStarted": false,
+    "currentRound": 1,
+    "categories": [
+      "Boy",
+      "Girl",
+      "Country",
+      "Food",
+      "Colour",
+      "Car",
+      "Movie / TV Show"
+    ],
+    "submissions": {},
+    "scores": {
+      "penis": 0
+    }
+  },
+  "0ed24d3c-0fa9-44cb-a682-e9414b8bb2bd": {
+    "gameId": "0ed24d3c-0fa9-44cb-a682-e9414b8bb2bd",
+    "players": [
+      "penis",
+      "wtf"
+    ],
+    "gameStarted": true,
+    "currentRound": 1,
+    "categories": [
+      "Boy",
+      "Girl",
+      "Country",
+      "Food",
+      "Colour",
+      "Car",
+      "Movie / TV Show"
+    ],
+    "submissions": {
+      "wtf": {
+        "Boy": "wtf",
+        "Girl": "wtf",
+        "Country": "wtf",
+        "Food": "wtf",
+        "Colour": "wtf",
+        "Car": "wtf",
+        "Movie / TV Show": "wtf"
+      }
+    },
+    "scores": {
+      "penis": 0,
+      "wtf": 0
+    }
+  },
+  "79024407-6930-4927-867d-eda1d1773de4": {
+    "gameId": "79024407-6930-4927-867d-eda1d1773de4",
+    "players": [
+      "John"
+    ],
+    "gameStarted": false,
+    "currentRound": 1,
+    "categories": [
+      "Boy",
+      "Girl",
+      "Country",
+      "Food",
+      "Colour",
+      "Car",
+      "Movie / TV Show"
+    ],
+    "submissions": {},
+    "scores": {
+      "John": 0
+    }
+  },
+  "f485061d-7eef-4226-9fe6-9a7c8c24fab2": {
+    "gameId": "f485061d-7eef-4226-9fe6-9a7c8c24fab2",
+    "players": [
+      "John"
+    ],
+    "gameStarted": false,
+    "currentRound": 1,
+    "categories": [
+      "Boy",
+      "Girl",
+      "Country",
+      "Food",
+      "Colour",
+      "Car",
+      "Movie / TV Show"
+    ],
+    "submissions": {},
+    "scores": {
+      "John": 0
+    }
+  },
+  "1e5a0b22-1967-4f4a-97eb-e638adeeb365": {
+    "gameId": "1e5a0b22-1967-4f4a-97eb-e638adeeb365",
+    "players": [
+      "John"
+    ],
+    "gameStarted": false,
+    "currentRound": 1,
+    "categories": [
+      "Boy",
+      "Girl",
+      "Country",
+      "Food",
+      "Colour",
+      "Car",
+      "Movie / TV Show"
+    ],
+    "submissions": {},
+    "scores": {
+      "John": 0
+    }
+  },
+  "ab14144f-f270-483b-b1b9-f5854ce103f8": {
+    "gameId": "ab14144f-f270-483b-b1b9-f5854ce103f8",
+    "players": [
+      "John"
+    ],
+    "gameStarted": false,
+    "currentRound": 1,
+    "categories": [
+      "Boy",
+      "Girl",
+      "Country",
+      "Food",
+      "Colour",
+      "Car",
+      "Movie / TV Show"
+    ],
+    "submissions": {},
+    "scores": {
+      "John": 0
+    }
+  },
+  "88ff8f45-7a50-4d09-a92a-b82a0147ba39": {
+    "gameId": "88ff8f45-7a50-4d09-a92a-b82a0147ba39",
+    "players": [
+      "Test1"
+    ],
+    "gameStarted": false,
+    "currentRound": 1,
+    "categories": [
+      "Boy",
+      "Girl",
+      "Country",
+      "Food",
+      "Colour",
+      "Car",
+      "Movie / TV Show"
+    ],
+    "submissions": {},
+    "scores": {
+      "Test1": 0
+    }
+  },
+  "6f149f26-4d9f-4e28-8cac-c3a66a646f07": {
+    "gameId": "6f149f26-4d9f-4e28-8cac-c3a66a646f07",
+    "players": [
+      "Test1"
+    ],
+    "gameStarted": false,
+    "currentRound": 1,
+    "categories": [
+      "Boy",
+      "Girl",
+      "Country",
+      "Food",
+      "Colour",
+      "Car",
+      "Movie / TV Show"
+    ],
+    "submissions": {},
+    "scores": {
+      "Test1": 0
+    }
+  },
+  "f496e238-e9e3-4fd5-ab69-76eea3e9e35e": {
+    "gameId": "f496e238-e9e3-4fd5-ab69-76eea3e9e35e",
+    "players": [
+      "Test1"
+    ],
+    "gameStarted": false,
+    "currentRound": 1,
+    "categories": [
+      "Boy",
+      "Girl",
+      "Country",
+      "Food",
+      "Colour",
+      "Car",
+      "Movie / TV Show"
+    ],
+    "submissions": {},
+    "scores": {
+      "Test1": 0
+    }
+  },
+  "5b40db7d-f03f-486d-b540-c74a64322375": {
+    "gameId": "5b40db7d-f03f-486d-b540-c74a64322375",
+    "players": [
+      "Test1"
+    ],
+    "gameStarted": false,
+    "currentRound": 1,
+    "categories": [
+      "Boy",
+      "Girl",
+      "Country",
+      "Food",
+      "Colour",
+      "Car",
+      "Movie / TV Show"
+    ],
+    "submissions": {},
+    "scores": {
+      "Test1": 0
+    }
+  }
+}

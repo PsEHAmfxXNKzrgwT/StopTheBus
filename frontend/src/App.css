@@ -1,110 +1,88 @@
-/* Light mode (default) */
-:root {
-  --bg-color: #ffffff;
-  --text-color: #000000;
-  --input-bg: #f5f5f5;
-  --input-border: #ccc;
-  --button-bg: #007bff;
-  --button-text: #ffffff;
-  --button-hover: #0056b3;
-  --message-color: #333;
-  --player-color: #444;
-}
+/* App.css */
 
-/* Dark mode */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg-color: #121212;
-    --text-color: #f0f0f0;
-    --input-bg: #1e1e1e;
-    --input-border: #444;
-    --button-bg: #1a73e8;
-    --button-text: #ffffff;
-    --button-hover: #4285f4;
-    --message-color: #ccc;
-    --player-color: #aaa;
-  }
-}
-
-body {
-  background-color: var(--bg-color);
-  color: var(--text-color);
-  transition: background-color 0.3s, color 0.3s;
+body, html {
+  margin: 0;
+  font-family: Arial, sans-serif;
 }
 
 .app-container {
-  font-family: 'Arial', sans-serif;
-  text-align: center;
-  padding: 10px;
-  height: 100vh;
-  max-height: 100vh;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
 }
 
-input, button {
-  margin: 4px;
-  padding: 8px;
-  font-size: 0.9rem;
+nav {
+  margin-bottom: 20px;
 }
 
-input {
-  background-color: var(--input-bg);
-  color: var(--text-color);
-  border: 1px solid var(--input-border);
-  border-radius: 4px;
+nav a {
+  margin: 0 10px;
+  text-decoration: none;
+  color: #007bff;
+}
+
+nav a:hover {
+  text-decoration: underline;
+}
+
+h1 {
+  font-size: 2rem;
+}
+
+.message {
+  background-color: #f9f9f9;
+  padding: 10px;
+  border-radius: 5px;
+  margin-top: 20px;
+  text-align: center;
 }
 
 button {
-  background-color: var(--button-bg);
-  color: var(--button-text);
+  background-color: #007bff;
+  color: white;
   border: none;
-  border-radius: 4px;
+  padding: 10px 20px;
+  font-size: 1rem;
   cursor: pointer;
+  margin: 10px;
 }
 
 button:hover {
-  background-color: var(--button-hover);
+  background-color: #0056b3;
+}
+
+input {
+  padding: 8px;
+  font-size: 1rem;
+  margin: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+input:focus {
+  outline: none;
+  border-color: #007bff;
 }
 
 .category-inputs {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  gap: 6px;
-  max-height: 30vh;
-  overflow-y: auto;
-  margin-top: 10px;
+  margin-bottom: 20px;
+}
+
+.category-input-box {
+  margin-bottom: 10px;
 }
 
 .category-input-box input {
   width: 100%;
-}
-
-.message {
-  font-weight: bold;
-  margin-top: 8px;
-  color: var(--message-color);
+  padding: 8px;
 }
 
 .scores {
-  font-size: 0.85rem;
-  margin-top: 10px;
+  margin-top: 20px;
 }
 
-.app-container p {
-  margin: 0;
+.scores p {
   font-size: 1rem;
-  color: var(--player-color);
-}
-
-@media (max-height: 700px) {
-  .category-inputs {
-    max-height: 25vh;
-  }
-
-  input, button {
-    font-size: 0.8rem;
-    padding: 6px 10px;
-  }
+  font-weight: bold;
 }

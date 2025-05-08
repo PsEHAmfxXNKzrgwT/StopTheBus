@@ -1,16 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import './Settings.css';
+import React from 'react';
 
 function Settings({ toggleDarkMode, currentMode }) {
   return (
-    <div className="settings-container">
+    <div className="settings">
       <h2>Settings</h2>
-      <div className="toggle-container">
-        <label>Dark Mode</label>
-        <button className="toggle-btn" onClick={toggleDarkMode}>
-          {currentMode === 'dark' ? '🌞 Light Mode' : '🌙 Dark Mode'}
-        </button>
-      </div>
+      <label>
+        Dark Mode:
+        <input type="checkbox" checked={currentMode === 'dark'} onChange={toggleDarkMode} />
+      </label>
     </div>
   );
 }

@@ -15,231 +15,200 @@ function App() {
   const [gameIdInput, setGameIdInput] = useState('');
   const [answers, setAnswers] = useState({});
   const [message, setMessage] = useState('');
+  const [category, setCategory] = useState('');
 
   const handleInputChange = (category, value) => {
-    setAnswers((prevAnswers) => ({
-      ...prevAnswers,
-      [category]: value,
-    }));
+    setAnswers((prev) => ({ ...prev, [category]: value }));
   };
 
-  const handlePlayerNameChange = (e) => {
-    setPlayerName(e.target.value);
-  };
-
-  const handleGameIdChange = (e) => {
-    setGameIdInput(e.target.value);
-  };
+  const handlePlayerNameChange = (e) => setPlayerName(e.target.value);
+  const handleGameIdChange = (e) => setGameIdInput(e.target.value);
 
   const handleCreateGame = async () => {
-    if (!playerName) {
-      setMessage("❌ Please enter a player name.");
-      return;
-    }
-
+    if (!playerName) return setMessage("❌ Please enter a player name.");
     try {
-      const response = await fetch('http://localhost:6464/create-game', {
+      const res = await fetch('http://localhost:6464/create-game', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ playerName }),
       });
-
-      if (response.ok) {
-        const data = await response.json();
-        setGameState((prev) => ({
-          ...prev,
-          gameId: data.gameId,
-          players: [playerName],
-          gameStarted: false,
-        }));
-        setMessage(`✅ Game created! Your game ID is: ${data.gameId}`);
-      } else {
-        setMessage('❌ Failed to create a game. Please try again.');
-      }
-    } catch (error) {
-      console.error("❌ Error creating game:", error);
+      const data = await res.json();
+      setGameState((prev) => ({
+        ...prev,
+        gameId: data.gameId,
+        players: [playerName],
+        gameStarted: false,
+      }));
+      setMessage(`✅ Game created! Your game ID is: ${data.gameId}`);
+    } catch (err) {
       setMessage('❌ Error creating game.');
     }
   };
 
   const handleJoinGame = async () => {
     if (!playerName || !gameIdInput) {
-      setMessage("❌ Please enter a player name and a valid game ID.");
-      return;
+      return setMessage("❌ Please enter a player name and Game ID.");
     }
 
     try {
-      const response = await fetch('http://localhost:6464/join-game', {
+      const res = await fetch('http://localhost:6464/join-game', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ gameId: gameIdInput, playerName }),
       });
-
-      if (response.ok) {
-        const data = await response.json();
-        setGameState((prev) => ({
-          ...prev,
-          gameId: gameIdInput,
-          players: data.gameRoom.players,
-          gameStarted: data.gameRoom.gameStarted,
-        }));
-        setMessage(`✅ Joined game with ID: ${gameIdInput}`);
-      } else {
-        setMessage('❌ Failed to join the game. Please try again.');
-      }
-    } catch (error) {
-      console.error("❌ Error joining game:", error);
-      setMessage('❌ Error joining game.');
+      const data = await res.json();
+      setGameState((prev) => ({
+        ...prev,
+        gameId: gameIdInput,
+        players: data.gameRoom.players,
+        gameStarted: data.gameRoom.gameStarted,
+        scores: data.gameRoom.scores,
+      }));
+      setMessage(`✅ Joined game ${gameIdInput}`);
+    } catch {
+      setMessage("❌ Couldn't join game.");
     }
   };
 
   const handleStartGame = async () => {
-    if (!gameState.gameId) {
-      setMessage("❌ You need to create or join a game first.");
-      return;
-    }
-
+    if (!gameState.gameId) return setMessage("❌ No game to start.");
     try {
-      const response = await fetch('http://localhost:6464/start-game', {
+      const res = await fetch('http://localhost:6464/start-game', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ gameId: gameState.gameId }),
       });
-
-      if (response.ok) {
-        setGameState((prev) => ({
-          ...prev,
-          gameStarted: true,
-          currentRound: 1,
-        }));
-        setMessage("🎮 Game started!");
-      } else {
-        setMessage('❌ Failed to start the game. Please try again.');
+      if (res.ok) {
+        setGameState((prev) => ({ ...prev, gameStarted: true, currentRound: 1 }));
+        await handleStartRound();
       }
-    } catch (error) {
-      console.error("❌ Error starting game:", error);
+    } catch {
       setMessage('❌ Error starting game.');
     }
   };
 
-  const handleSubmitAnswers = async () => {
-    const allCategoriesAnswered = gameState.categories.every(
-      (category) => answers[category] && answers[category].trim() !== ''
-    );
-
-    if (!playerName || !allCategoriesAnswered) {
-      setMessage("❌ Please provide a player name and answers for all categories.");
-      return;
-    }
-
+  const handleStartRound = async () => {
     try {
-      const response = await fetch('http://localhost:6464/submit-answers', {
+      const res = await fetch('http://localhost:6464/start-round', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ gameId: gameState.gameId, playerName, answers }),
+        body: JSON.stringify({ gameId: gameState.gameId }),
       });
-
-      if (response.ok) {
-        const data = await response.text();
-        setMessage("✅ " + data);
-      } else {
-        setMessage('❌ Failed to submit answers. Please try again.');
-      }
-    } catch (error) {
-      console.error("❌ Error submitting answers:", error);
-      setMessage('❌ Error submitting answers.');
+      const data = await res.json();
+      setCategory(data.currentCategory);
+      setGameState((prev) => ({
+        ...prev,
+        currentRound: data.currentRound,
+      }));
+      setAnswers({});
+      setMessage(`🧠 New round started! Category: ${data.currentCategory}`);
+    } catch (err) {
+      setMessage('✅ Game has finished all rounds.');
     }
   };
 
-  // 🔁 Polling for updates
+  const handleSubmitAnswers = async () => {
+    const allFilled = gameState.categories.every(
+      (cat) => answers[cat] && answers[cat].trim() !== ''
+    );
+    if (!allFilled) return setMessage("❌ Fill all categories.");
+    try {
+      const res = await fetch('http://localhost:6464/submit-answers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          gameId: gameState.gameId,
+          playerName,
+          answers,
+        }),
+      });
+      const text = await res.text();
+      setMessage("✅ " + text);
+    } catch {
+      setMessage("❌ Failed to submit.");
+    }
+  };
+
   useEffect(() => {
     if (!gameState.gameId) return;
-
     const interval = setInterval(async () => {
       try {
-        const response = await fetch(`http://localhost:6464/get-game?gameId=${gameState.gameId}`);
-        if (response.ok) {
-          const updatedGame = await response.json();
+        const res = await fetch(`http://localhost:6464/get-game?gameId=${gameState.gameId}`);
+        if (res.ok) {
+          const data = await res.json();
           setGameState((prev) => ({
             ...prev,
-            players: updatedGame.players,
-            gameStarted: updatedGame.gameStarted,
-            scores: updatedGame.scores || prev.scores,
-            currentRound: updatedGame.currentRound || prev.currentRound,
+            players: data.players,
+            gameStarted: data.gameStarted,
+            currentRound: data.currentRound,
+            scores: data.scores || prev.scores,
           }));
         }
-      } catch (err) {
-        console.error("❌ Error polling game state:", err);
-      }
+      } catch {}
     }, 3000);
-
     return () => clearInterval(interval);
   }, [gameState.gameId]);
 
   return (
     <div className="app-container">
-      <h1>🎒 Stop the Bus</h1>
-
-      {/* Join/Create Form */}
-      {!gameState.gameStarted && !gameState.gameId && (
-        <>
-          <div className="player-name-container">
-            <h2>👤 Enter Player Name</h2>
-            <input
-              type="text"
-              value={playerName}
-              onChange={handlePlayerNameChange}
-              placeholder="Enter your name"
-            />
-          </div>
-
-          <div className="game-id-container">
-            <h2>🏁 Create or Join a Game</h2>
-            <input
-              type="text"
-              value={gameIdInput}
-              onChange={handleGameIdChange}
-              placeholder="Enter Game ID (to join)"
-            />
-            <button onClick={handleJoinGame}>🎮 Join Game</button>
-            <button onClick={handleCreateGame}>🚀 Create Game</button>
-          </div>
-        </>
+      <h1>🚌 Stop the Bus</h1>
+      {gameState.gameId && (
+        <p><strong>🆔 Game Code:</strong> {gameState.gameId}</p>
       )}
+      <div className="main-content" style={{ flexGrow: 1, overflow: 'auto' }}>
+        {!gameState.gameStarted && !gameState.gameId && (
+          <>
+            <input value={playerName} onChange={handlePlayerNameChange} placeholder="Your name" />
+            <input value={gameIdInput} onChange={handleGameIdChange} placeholder="Game ID to join" />
+            <button onClick={handleJoinGame}>🎮 Join</button>
+            <button onClick={handleCreateGame}>🚀 Create</button>
+          </>
+        )}
 
-      {/* Start Game Button */}
-      {!gameState.gameStarted && gameState.gameId && (
-        <button onClick={handleStartGame}>🚀 Start Game</button>
-      )}
+        {!gameState.gameStarted && gameState.gameId && (
+          <>
+            <h3>👥 Players List</h3>
+            <ul>
+              {gameState.players.map((player, index) => (
+                <li key={index}>{player}</li>
+              ))}
+            </ul>
+            <button onClick={handleStartGame}>▶️ Start Game</button>
+          </>
+        )}
 
-      {/* Game Info */}
-      {gameState.gameStarted && (
-        <>
-          <div className="game-info">
-            <h3>🎲 Game Info</h3>
-            <p><strong>🕒 Round:</strong> {gameState.currentRound}</p>
-            <p><strong>👥 Players:</strong> {gameState.players.join(', ')}</p>
-            <p><strong>📋 Categories:</strong> {gameState.categories.join(', ')}</p>
-          </div>
+        {gameState.gameStarted && (
+          <>
+            <h3>🎲 Round {gameState.currentRound}</h3>
+            <p><strong>Category:</strong> {category}</p>
 
-          <div className="category-inputs">
-            {gameState.categories.map((category) => (
-              <div key={category} className="category-input-box">
-                <label><strong>{category}</strong></label>
-                <input
-                  type="text"
-                  value={answers[category] || ''}
-                  onChange={(e) => handleInputChange(category, e.target.value)}
-                />
-              </div>
-            ))}
-          </div>
+            <div className="category-inputs">
+              {gameState.categories.map((cat) => (
+                <div key={cat} className="category-input-box">
+                  <label>{cat}</label>
+                  <input
+                    value={answers[cat] || ''}
+                    onChange={(e) => handleInputChange(cat, e.target.value)}
+                  />
+                </div>
+              ))}
+            </div>
 
-          <button onClick={handleSubmitAnswers}>📤 Submit Answers</button>
-        </>
-      )}
+            <div style={{ marginTop: '10px' }}>
+              <button onClick={handleSubmitAnswers}>📤 Submit</button>
+              <button onClick={handleStartRound}>🔄 Next Round</button>
+            </div>
 
-      {/* Message Display */}
+            <div className="scores">
+              <h4>🏆 Scores</h4>
+              {Object.entries(gameState.scores).map(([player, score]) => (
+                <p key={player}>{player}: {score}</p>
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+
       {message && <div className="message">{message}</div>}
     </div>
   );

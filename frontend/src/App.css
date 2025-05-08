@@ -1,3 +1,37 @@
+/* Light mode (default) */
+:root {
+  --bg-color: #ffffff;
+  --text-color: #000000;
+  --input-bg: #f5f5f5;
+  --input-border: #ccc;
+  --button-bg: #007bff;
+  --button-text: #ffffff;
+  --button-hover: #0056b3;
+  --message-color: #333;
+  --player-color: #444;
+}
+
+/* Dark mode */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-color: #121212;
+    --text-color: #f0f0f0;
+    --input-bg: #1e1e1e;
+    --input-border: #444;
+    --button-bg: #1a73e8;
+    --button-text: #ffffff;
+    --button-hover: #4285f4;
+    --message-color: #ccc;
+    --player-color: #aaa;
+  }
+}
+
+body {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  transition: background-color 0.3s, color 0.3s;
+}
+
 .app-container {
   font-family: 'Arial', sans-serif;
   text-align: center;
@@ -13,6 +47,25 @@ input, button {
   margin: 4px;
   padding: 8px;
   font-size: 0.9rem;
+}
+
+input {
+  background-color: var(--input-bg);
+  color: var(--text-color);
+  border: 1px solid var(--input-border);
+  border-radius: 4px;
+}
+
+button {
+  background-color: var(--button-bg);
+  color: var(--button-text);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: var(--button-hover);
 }
 
 .category-inputs {
@@ -31,7 +84,7 @@ input, button {
 .message {
   font-weight: bold;
   margin-top: 8px;
-  color: #333;
+  color: var(--message-color);
 }
 
 .scores {
@@ -39,16 +92,11 @@ input, button {
   margin-top: 10px;
 }
 
-button {
-  cursor: pointer;
-}
-
 .app-container p {
   margin: 0;
   font-size: 1rem;
-  color: #444;
+  color: var(--player-color);
 }
-
 
 @media (max-height: 700px) {
   .category-inputs {

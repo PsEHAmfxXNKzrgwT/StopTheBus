@@ -5,7 +5,7 @@ const { v4: uuidv4 } = require('uuid');
 require('dotenv').config();  // Load environment variables
 
 const app = express();
-const PORT = process.env.PORT || 6464;  // Use environment variable or default to 6464
+const PORT = process.env.PORT || 6464;
 
 app.use(cors());
 app.use(express.json());
@@ -47,6 +47,12 @@ function generateShortGameId(length = 4) {
   return gameId;
 }
 
+// Get random letter A-Z
+function getRandomLetter() {
+  const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  return alphabet[Math.floor(Math.random() * alphabet.length)];
+}
+
 // Create a game
 app.post('/create-game', (req, res) => {
   const { playerName } = req.body;
@@ -59,6 +65,7 @@ app.post('/create-game', (req, res) => {
     players: [playerName],
     gameStarted: false,
     currentRound: 1,
+    currentLetter: null,
     categories: ['Boy', 'Girl', 'Country', 'Food', 'Colour', 'Car', 'Movie / TV Show'],
     submissions: {},
     scores: { [playerName]: 0 },
@@ -99,6 +106,7 @@ app.post('/start-game', (req, res) => {
 
   gameRoom.gameStarted = true;
   gameRoom.currentRound = 1;
+  gameRoom.currentLetter = null;
   gameRoom.submissions = {};
   gameRoom.scores = Object.fromEntries(gameRoom.players.map(p => [p, 0]));
 
@@ -106,7 +114,7 @@ app.post('/start-game', (req, res) => {
   res.status(200).send("🎮 Game started!");
 });
 
-// Start a round (return category)
+// Start a round (get new random letter)
 app.post('/start-round', (req, res) => {
   const { gameId } = req.body;
   const gameRoom = gameRooms[gameId];
@@ -114,15 +122,14 @@ app.post('/start-round', (req, res) => {
   if (!gameRoom) return res.status(404).send("❌ Game not found.");
   if (!gameRoom.gameStarted) return res.status(400).send("❌ Game has not started.");
 
-  const categoryIndex = gameRoom.currentRound - 1;
-  if (categoryIndex >= gameRoom.categories.length) {
-    return res.status(400).send("✅ Game has finished all rounds.");
-  }
+  const letter = getRandomLetter();
+  gameRoom.currentLetter = letter;
 
-  const currentCategory = gameRoom.categories[categoryIndex];
+  saveGameRooms();
+
   res.status(200).json({
-    currentCategory,
     currentRound: gameRoom.currentRound,
+    currentLetter: letter,
   });
 });
 
@@ -195,6 +202,7 @@ app.post('/next-round', (req, res) => {
   }
 
   gameRoom.currentRound += 1;
+  gameRoom.currentLetter = null;
   gameRoom.submissions = {};
 
   saveGameRooms();
@@ -216,4 +224,3 @@ app.get('/get-game', (req, res) => {
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Server running on ${process.env.BACKEND_URL || `http://0.0.0.0:${PORT}`}`);
 });
-

@@ -95,41 +95,52 @@ function App() {
       });
       if (res.ok) {
         setGameState((prev) => ({ ...prev, gameStarted: true, currentRound: 1 }));
-        await handleStartRound(); // Start the first round
+        setMessage("🎮 Game started! Waiting for submissions.");
+        // ❌ Removed auto-start of the first round (handled manually by host now)
+      } else {
+        const text = await res.text();
+        setMessage("❌ " + text);
       }
     } catch {
       setMessage('❌ Error starting game.');
     }
   };
+  
 
   const handleStartRound = async () => {
     try {
-      await fetch('http://localhost:6464/next-round', {
+      const nextRoundRes = await fetch('http://localhost:6464/next-round', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ gameId: gameState.gameId }),
+        body: JSON.stringify({ gameId: gameState.gameId, playerName }),
       });
-
+  
+      const nextRoundText = await nextRoundRes.text();
+      if (!nextRoundRes.ok) {
+        return setMessage(`⚠️ ${nextRoundText}`);
+      }
+  
       const res = await fetch('http://localhost:6464/start-round', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ gameId: gameState.gameId }),
+        body: JSON.stringify({ gameId: gameState.gameId, playerName }),
       });
-
+  
       const data = await res.json();
-
       setGameState((prev) => ({
         ...prev,
         currentRound: data.currentRound,
         currentLetter: data.currentLetter,
       }));
-
+  
       setAnswers({});
       setMessage(`🔤 New round started! Letter: ${data.currentLetter}`);
     } catch (err) {
-      setMessage('✅ Game has finished all rounds.');
+      setMessage('❌ Error starting new round.');
     }
   };
+  
+  
 
   const handleSubmitAnswers = async () => {
     const allFilled = gameState.categories.every(
@@ -185,12 +196,19 @@ function App() {
             currentRound: data.currentRound,
             currentLetter: data.currentLetter,
             scores: data.scores || prev.scores,
+            host: data.host,
           }));
+          
         }
       } catch {}
     }, 3000);
     return () => clearInterval(interval);
   }, [gameState.gameId]);
+
+  {gameState.host === playerName && (
+    <button onClick={handleStartRound}>🔄 Next Round</button>
+  )}
+  
 
   return (
     <Router>

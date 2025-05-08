@@ -2,7 +2,7 @@ const express = require('express');
 const fs = require('fs');
 const cors = require('cors');
 const { v4: uuidv4 } = require('uuid');
-require('dotenv').config();  // Load environment variables
+require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 6464;
@@ -12,7 +12,6 @@ app.use(express.json());
 
 let gameRooms = {};
 
-// Load gameRooms from file
 function loadGameRooms() {
   try {
     const data = fs.readFileSync('gameRooms.json');
@@ -23,12 +22,10 @@ function loadGameRooms() {
   }
 }
 
-// Save gameRooms to file
 function saveGameRooms() {
   fs.writeFileSync('gameRooms.json', JSON.stringify(gameRooms, null, 2));
 }
 
-// Graceful shutdown saving
 process.on('SIGINT', () => {
   console.log('💾 Saving gameRooms before shutdown...');
   saveGameRooms();
@@ -37,7 +34,6 @@ process.on('SIGINT', () => {
 
 gameRooms = loadGameRooms();
 
-// Generate short numeric game ID
 function generateShortGameId(length = 4) {
   const characters = '123456789';
   let gameId = '';
@@ -47,7 +43,6 @@ function generateShortGameId(length = 4) {
   return gameId;
 }
 
-// Get random letter A-Z
 function getRandomLetter() {
   const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
   return alphabet[Math.floor(Math.random() * alphabet.length)];
@@ -63,6 +58,7 @@ app.post('/create-game', (req, res) => {
   gameRooms[newGameId] = {
     gameId: newGameId,
     players: [playerName],
+    host: playerName, // <-- add this
     gameStarted: false,
     currentRound: 1,
     currentLetter: null,
@@ -70,11 +66,14 @@ app.post('/create-game', (req, res) => {
     submissions: {},
     scores: { [playerName]: 0 },
   };
+  
+  
 
   saveGameRooms();
   res.status(200).json({
     message: "✅ Game created successfully!",
     gameId: newGameId,
+    host: playerName, // ✅ Return host
   });
 });
 
@@ -92,17 +91,24 @@ app.post('/join-game', (req, res) => {
   gameRoom.scores[playerName] = 0;
 
   saveGameRooms();
-  res.status(200).json({ message: `✅ ${playerName} joined game ${gameId}`, gameRoom });
+  res.status(200).json({
+    message: `✅ ${playerName} joined game ${gameId}`,
+    gameRoom: {
+      ...gameRoom,
+      host: gameRoom.host, // ✅ Return host
+    }
+  });
 });
 
-// Start the game
+// Start the game (host only)
 app.post('/start-game', (req, res) => {
-  const { gameId } = req.body;
+  const { gameId, playerName } = req.body;
   const gameRoom = gameRooms[gameId];
 
   if (!gameRoom) return res.status(404).send("❌ Game not found.");
   if (gameRoom.gameStarted) return res.status(400).send("❌ Game already started.");
   if (gameRoom.players.length < 1) return res.status(400).send("❌ At least 1 player is required.");
+  if (gameRoom.host !== playerName) return res.status(403).send("❌ Only the host can start the game."); // ✅ Host check
 
   gameRoom.gameStarted = true;
   gameRoom.currentRound = 1;
@@ -114,7 +120,7 @@ app.post('/start-game', (req, res) => {
   res.status(200).send("🎮 Game started!");
 });
 
-// Start a round (get new random letter)
+// Start a round
 app.post('/start-round', (req, res) => {
   const { gameId } = req.body;
   const gameRoom = gameRooms[gameId];
@@ -195,6 +201,8 @@ app.post('/next-round', (req, res) => {
 
   if (!gameRoom) return res.status(404).send("❌ Game not found.");
   if (!gameRoom.gameStarted) return res.status(400).send("❌ Game has not started.");
+  if (gameRoom.host !== playerName) return res.status(403).send("❌ Only the host can start the round.");
+
 
   const allPlayersSubmitted = gameRoom.players.every(player => player in gameRoom.submissions);
   if (!allPlayersSubmitted) {
@@ -217,7 +225,10 @@ app.get('/get-game', (req, res) => {
   const gameRoom = gameRooms[gameId];
   if (!gameRoom) return res.status(404).send("❌ Game not found.");
 
-  res.status(200).json(gameRoom);
+  res.status(200).json({
+    ...gameRoom,
+    host: gameRoom.host, // ✅ Include host info
+  });
 });
 
 // Start server

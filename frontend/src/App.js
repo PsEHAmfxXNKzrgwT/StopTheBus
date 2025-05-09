@@ -5,17 +5,7 @@ import Settings from './Settings';
 import Lobby from './components/Lobby';
 import GameBoard from './components/GameBoard';
 
-// Remove this duplicate import
-// import React from 'react'; // This is redundant
-import ReactDOM from 'react-dom';
-import './index.css';
 
-ReactDOM.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
-  document.getElementById('root')
-);
 
 
 function App() {

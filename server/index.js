@@ -10,6 +10,7 @@ const PORT = process.env.PORT || 6464;
 app.use(cors());
 app.use(express.json());
 
+
 let gameRooms = {};
 
 function loadGameRooms() {

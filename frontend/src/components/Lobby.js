@@ -8,6 +8,7 @@ function Lobby({
   setGameState,
   gameState,
   setMessage,
+  handleStartRound, // ✅ make sure this is passed from App.js
 }) {
   const handleCreateGame = async () => {
     if (!playerName) return setMessage("❌ Please enter a player name.");
@@ -59,15 +60,18 @@ function Lobby({
 
   const handleStartGame = async () => {
     if (!gameState.gameId) return setMessage("❌ No game to start.");
+
     try {
       const res = await fetch('http://localhost:6464/start-game', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ gameId: gameState.gameId }),
+        body: JSON.stringify({ gameId: gameState.gameId, playerName }),
       });
+
       if (res.ok) {
         setGameState((prev) => ({ ...prev, gameStarted: true, currentRound: 1 }));
         setMessage("🎮 Game started!");
+        await handleStartRound(); // ✅ Now this works because it's passed in
       } else {
         const text = await res.text();
         setMessage("❌ " + text);

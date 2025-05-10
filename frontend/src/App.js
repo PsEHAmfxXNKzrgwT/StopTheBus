@@ -8,6 +8,7 @@ import GameBoard from './components/GameBoard';
 
 
 
+
 function App() {
   const [gameState, setGameState] = useState({
     gameId: null,
@@ -75,14 +76,17 @@ function App() {
           <Route path="/" element={
             !gameState.gameStarted ? (
               <Lobby
-                playerName={playerName}
-                setPlayerName={setPlayerName}
-                gameIdInput={gameIdInput}
-                setGameIdInput={setGameIdInput}
-                setGameState={setGameState}
-                gameState={gameState}
-                setMessage={setMessage}
-              />
+  playerName={playerName}
+  setPlayerName={setPlayerName}
+  gameIdInput={gameIdInput}
+  setGameIdInput={setGameIdInput}
+  setGameState={setGameState}
+  gameState={gameState}
+  setMessage={setMessage}
+  handleStartGame={handleStartGame}
+  handleStartRound={handleStartRound}
+/>
+
             ) : (
               <GameBoard
                 gameState={gameState}

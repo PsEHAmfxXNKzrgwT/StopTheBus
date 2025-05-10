@@ -845,5 +845,78 @@
     "scores": {
       "Test1": 0
     }
+  },
+  "3ab26024-b25c-451e-8292-17917a74e896": {
+    "gameId": "3ab26024-b25c-451e-8292-17917a74e896",
+    "players": [
+      "Test1",
+      "test2"
+    ],
+    "host": "Test1",
+    "gameStarted": false,
+    "currentRound": 1,
+    "currentLetter": null,
+    "categories": [
+      "Boy",
+      "Girl",
+      "Country",
+      "Food",
+      "Colour",
+      "Car",
+      "Movie / TV Show"
+    ],
+    "submissions": {},
+    "scores": {
+      "Test1": 0,
+      "test2": 0
+    }
+  },
+  "f78f323f-1b86-46c5-9ae0-ffc6bb3ca352": {
+    "gameId": "f78f323f-1b86-46c5-9ae0-ffc6bb3ca352",
+    "players": [
+      "test2"
+    ],
+    "host": "test2",
+    "gameStarted": false,
+    "currentRound": 1,
+    "currentLetter": null,
+    "categories": [
+      "Boy",
+      "Girl",
+      "Country",
+      "Food",
+      "Colour",
+      "Car",
+      "Movie / TV Show"
+    ],
+    "submissions": {},
+    "scores": {
+      "test2": 0
+    }
+  },
+  "b69118f6-8500-44b1-af2a-73dd244c6526": {
+    "gameId": "b69118f6-8500-44b1-af2a-73dd244c6526",
+    "players": [
+      "player1",
+      "player2"
+    ],
+    "host": "player1",
+    "gameStarted": true,
+    "currentRound": 1,
+    "currentLetter": null,
+    "categories": [
+      "Boy",
+      "Girl",
+      "Country",
+      "Food",
+      "Colour",
+      "Car",
+      "Movie / TV Show"
+    ],
+    "submissions": {},
+    "scores": {
+      "player1": 0,
+      "player2": 0
+    }
   }
 }

@@ -1,85 +1,143 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
-function GameBoard({ playerName, gameState, answers, setAnswers, setMessage, setGameState }) {
-  const handleInputChange = (category, value) => {
+function GameBoard({ gameState, playerName, answers, setAnswers, setMessage }) {
+  const [submissions, setSubmissions] = useState({});
+  const [submitted, setSubmitted] = useState(false);
+
+  const handleChange = (category, value) => {
     setAnswers((prev) => ({ ...prev, [category]: value }));
   };
 
-  const handleSubmitAnswers = async () => {
-    const allFilled = gameState.categories.every(
-      (cat) => answers[cat] && answers[cat].trim() !== ''
-    );
-    if (!allFilled) return setMessage("❌ Fill all categories.");
-
-    const invalidAnswers = gameState.categories.filter((cat) => {
-      const answer = answers[cat]?.trim();
-      const roundLetter = gameState.currentLetter?.toUpperCase();
-      return !answer || answer[0].toUpperCase() !== roundLetter;
+  const handleSubmit = async () => {
+    if (submitted) return setMessage('✅ Already submitted!');
+    const res = await fetch('http://localhost:6464/submit-answers', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        gameId: gameState.gameId,
+        playerName,
+        answers,
+      }),
     });
-
-    if (invalidAnswers.length > 0) {
-      return setMessage(`❌ Answers for ${invalidAnswers.join(', ')} must start with ${gameState.currentLetter}`);
-    }
-
-    try {
-      const res = await fetch('http://localhost:6464/submit-answers', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ gameId: gameState.gameId, playerName, answers }),
-      });
-      const text = await res.text();
-      setMessage("✅ " + text);
-    } catch {
-      setMessage("❌ Failed to submit.");
+    const data = await res.json();
+    if (res.ok) {
+      setSubmitted(true);
+      setMessage('✅ Answers submitted!');
+    } else {
+      setMessage(data.message || '❌ Submission failed.');
     }
   };
 
-  const handleStartRound = async () => {
-    try {
-      const res = await fetch('http://localhost:6464/start-round', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ gameId: gameState.gameId, playerName }),
-      });
-      const data = await res.json();
-      setGameState((prev) => ({
-        ...prev,
-        currentRound: data.currentRound,
-        currentLetter: data.currentLetter,
-      }));
+  const fetchSubmissions = async () => {
+    const res = await fetch(`http://localhost:6464/submissions?gameId=${gameState.gameId}`);
+    const data = await res.json();
+    setSubmissions(data);
+  };
+
+  const handleUpdateScore = async (player, delta) => {
+    const res = await fetch('http://localhost:6464/update-score', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        gameId: gameState.gameId,
+        playerName: player,
+        score: delta,
+      }),
+    });
+    const data = await res.json();
+    if (res.ok) {
+      setMessage('✅ Score updated.');
+    } else {
+      setMessage(data.message || '❌ Failed to update score.');
+    }
+  };
+
+  const handleNextRound = async () => {
+    const res = await fetch('http://localhost:6464/next-round', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        gameId: gameState.gameId,
+        playerName,
+      }),
+    });
+    const data = await res.json();
+    if (res.ok) {
+      setSubmitted(false);
       setAnswers({});
-      setMessage(`🔤 New round! Letter: ${data.currentLetter}`);
-    } catch {
-      setMessage('❌ Error starting round.');
+      setMessage('➡️ Moved to next round.');
+    } else {
+      setMessage(data.message || '❌ Failed to move to next round.');
     }
   };
+
+  useEffect(() => {
+    if (!gameState.gameId) return;
+    const interval = setInterval(() => {
+      fetchSubmissions();
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [gameState.gameId]);
 
   return (
-    <>
-      <h3>🎲 Round {gameState.currentRound}</h3>
-      {gameState.currentLetter && <p>🅰️ Letter: <b>{gameState.currentLetter}</b></p>}
-      <div className="category-inputs">
-        {gameState.categories.map((cat) => (
-          <div key={cat} className="category-input-box">
-            <label>{cat}</label>
-            <input
-              value={answers[cat] || ''}
-              onChange={(e) => handleInputChange(cat, e.target.value)}
-            />
-          </div>
-        ))}
-      </div>
-      <div style={{ marginTop: '10px' }}>
-        <button onClick={handleSubmitAnswers}>📤 Submit</button>
-        {gameState.host === playerName && <button onClick={handleStartRound}>🔄 Next Round</button>}
-      </div>
+    <div className="game-board">
+      <h2>Round {gameState.currentRound}</h2>
+      <h3>Letter: {gameState.currentLetter || 'Waiting...'}</h3>
+
+      {!submitted && (
+        <div className="answer-form">
+          {gameState.categories.map((cat) => (
+            <div key={cat}>
+              <label>{cat}:</label>
+              <input
+                value={answers[cat] || ''}
+                onChange={(e) => handleChange(cat, e.target.value)}
+              />
+            </div>
+          ))}
+          <button onClick={handleSubmit}>✅ Submit Answers</button>
+        </div>
+      )}
+
+      {submitted && (
+        <div className="submissions">
+          <h3>Submissions</h3>
+          {Object.entries(submissions).map(([player, ans], idx) => (
+            <div key={idx}>
+              <strong>{player}</strong>
+              <ul>
+                {Object.entries(ans).map(([cat, val]) => (
+                  <li key={cat}>
+                    {cat}: {val}
+                  </li>
+                ))}
+              </ul>
+              {gameState.host === playerName && (
+                <div className="score-controls">
+                  <button onClick={() => handleUpdateScore(player, 1)}>+1</button>
+                  <button onClick={() => handleUpdateScore(player, -1)}>-1</button>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {gameState.host === playerName && submitted && (
+        <button onClick={handleNextRound}>➡️ Next Round</button>
+      )}
+
       <div className="scores">
-        <h4>🏆 Scores</h4>
-        {Object.entries(gameState.scores).map(([player, score]) => (
-          <p key={player}>{player}: {score}</p>
-        ))}
+        <h3>Scores</h3>
+        <ul>
+          {Object.entries(gameState.scores).map(([player, score]) => (
+            <li key={player}>
+              {player}: {score}
+            </li>
+          ))}
+        </ul>
       </div>
-    </>
+    </div>
   );
 }
 

@@ -8,7 +8,8 @@ function Lobby({
   setGameState,
   gameState,
   setMessage,
-  handleStartRound, // ✅ make sure this is passed from App.js
+  handleStartGame,
+  handleStartRound,
 }) {
   const handleCreateGame = async () => {
     if (!playerName) return setMessage("❌ Please enter a player name.");
@@ -58,35 +59,20 @@ function Lobby({
     }
   };
 
-  const handleStartGame = async () => {
-    if (!gameState.gameId) return setMessage("❌ No game to start.");
-
-    try {
-      const res = await fetch('http://localhost:6464/start-game', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ gameId: gameState.gameId, playerName }),
-      });
-
-      if (res.ok) {
-        setGameState((prev) => ({ ...prev, gameStarted: true, currentRound: 1 }));
-        setMessage("🎮 Game started!");
-        await handleStartRound(); // ✅ Now this works because it's passed in
-      } else {
-        const text = await res.text();
-        setMessage("❌ " + text);
-      }
-    } catch {
-      setMessage('❌ Error starting game.');
-    }
-  };
-
   return (
-    <>
+    <div className="lobby-container">
       {!gameState.gameId && (
         <>
-          <input value={playerName} onChange={(e) => setPlayerName(e.target.value)} placeholder="Your name" />
-          <input value={gameIdInput} onChange={(e) => setGameIdInput(e.target.value)} placeholder="Game ID to join" />
+          <input
+            value={playerName}
+            onChange={(e) => setPlayerName(e.target.value)}
+            placeholder="Your name"
+          />
+          <input
+            value={gameIdInput}
+            onChange={(e) => setGameIdInput(e.target.value)}
+            placeholder="Game ID to join"
+          />
           <button onClick={handleJoinGame}>🎮 Join</button>
           <button onClick={handleCreateGame}>🚀 Create</button>
         </>
@@ -100,12 +86,13 @@ function Lobby({
               <li key={i}>{player}</li>
             ))}
           </ul>
+
           {gameState.host === playerName && (
             <button onClick={handleStartGame}>▶️ Start Game</button>
           )}
         </>
       )}
-    </>
+    </div>
   );
 }
 

@@ -918,5 +918,30 @@
       "player1": 0,
       "player2": 0
     }
+  },
+  "059f19d7-9136-4a7e-b138-e970092de6b5": {
+    "gameId": "059f19d7-9136-4a7e-b138-e970092de6b5",
+    "players": [
+      "test1",
+      "test2"
+    ],
+    "host": "test1",
+    "gameStarted": true,
+    "currentRound": 2,
+    "currentLetter": null,
+    "categories": [
+      "Boy",
+      "Girl",
+      "Country",
+      "Food",
+      "Colour",
+      "Car",
+      "Movie / TV Show"
+    ],
+    "submissions": {},
+    "scores": {
+      "test1": 2,
+      "test2": 5
+    }
   }
 }

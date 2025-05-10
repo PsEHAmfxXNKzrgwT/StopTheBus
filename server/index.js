@@ -2,6 +2,8 @@ const express = require('express');
 const fs = require('fs');
 const cors = require('cors');
 const { v4: uuidv4 } = require('uuid');
+const http = require('http');
+const { Server } = require('socket.io');
 require('dotenv').config();
 
 const app = express();
@@ -141,6 +143,9 @@ app.post('/start-game', async (req, res) => {
   });
 });
 
+
+
+
 // Start a round
 app.post('/start-round', async (req, res) => {
   const { gameId } = req.body;
@@ -151,7 +156,10 @@ app.post('/start-round', async (req, res) => {
 
 const letter = getRandomLetter();
 gameRoom.currentLetter = letter;
+console.log("🚀 Emitting roundStarted with letter:", letter);
 io.emit('roundStarted', { letter });
+ 
+
 
   await saveGameRooms();
 
@@ -263,6 +271,19 @@ app.get('/get-game', (req, res) => {
 });
 
 // Start server
-app.listen(PORT, '0.0.0.0', () => {
+const server = http.createServer(app);
+
+const io = new Server(server, {
+  cors: {
+    origin: '*',
+    methods: ['GET', 'POST']
+  }
+});
+
+io.on('connection', (socket) => {
+  console.log(`🔌 Socket connected: ${socket.id}`);
+});
+
+server.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Server running on ${process.env.BACKEND_URL || `http://0.0.0.0:${PORT}`}`);
 });

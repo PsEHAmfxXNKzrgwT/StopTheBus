@@ -12,7 +12,7 @@ function GameBoard({ gameState, playerName, answers, setAnswers, setMessage }) {
 
   const handleSubmit = async () => {
     if (submitted) return setMessage('✅ Already submitted!');
-    const res = await fetch('http://localhost:6464/submit-answers', {
+    const res = await fetch('http://0.0.0.0:6464/submit-answers', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -31,13 +31,13 @@ function GameBoard({ gameState, playerName, answers, setAnswers, setMessage }) {
   };
 
   const fetchSubmissions = async () => {
-    const res = await fetch(`http://localhost:6464/submissions?gameId=${gameState.gameId}`);
+    const res = await fetch(`http://0.0.0.0:6464/submissions?gameId=${gameState.gameId}`);
     const data = await res.json();
     setSubmissions(data);
   };
 
   const handleUpdateScore = async (player, delta) => {
-    const res = await fetch('http://localhost:6464/update-score', {
+    const res = await fetch('http://0.0.0.0:6464/update-score', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -55,7 +55,7 @@ function GameBoard({ gameState, playerName, answers, setAnswers, setMessage }) {
   };
 
   const handleNextRound = async () => {
-    const res = await fetch('http://localhost:6464/next-round', {
+    const res = await fetch('http://0.0.0.0:6464/next-round', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -73,22 +73,22 @@ function GameBoard({ gameState, playerName, answers, setAnswers, setMessage }) {
     }
   };
 
-  useEffect(() => {
+  // ✅ FIX: Socket listener to receive the letter
+useEffect(() => {
   const handleRoundStarted = ({ letter }) => {
+    console.log("📥 Received roundStarted:", letter); // ← Add this
     setLetter(letter);
   };
 
   socket.on('roundStarted', handleRoundStarted);
-
-  return () => {
-    socket.off('roundStarted', handleRoundStarted);
-  };
+  return () => socket.off('roundStarted', handleRoundStarted);
 }, []);
+
 
   return (
     <div className="game-board">
       <h2>Round {gameState.currentRound}</h2>
-      <h3>Letter: {gameState.currentLetter || 'Waiting...'}</h3>
+      <h3>Letter: {letter || gameState.currentLetter || 'Waiting...'}</h3>
 
       {!submitted && (
         <div className="answer-form">

@@ -966,5 +966,61 @@
     "scores": {
       "test1": 0
     }
+  },
+  "dea6c072-c844-4020-a415-7ac73b645f32": {
+    "gameId": "dea6c072-c844-4020-a415-7ac73b645f32",
+    "players": [
+      "test"
+    ],
+    "host": "test",
+    "gameStarted": true,
+    "currentRound": 1,
+    "currentLetter": null,
+    "categories": [
+      "Boy",
+      "Girl",
+      "Country",
+      "Food",
+      "Colour",
+      "Car",
+      "Movie / TV Show"
+    ],
+    "submissions": {
+      "test": {
+        "Movie / TV Show": "a",
+        "Car": "d",
+        "Boy": "d",
+        "Girl": "d",
+        "Country": "d",
+        "Food": "d",
+        "Colour": "d"
+      }
+    },
+    "scores": {
+      "test": 0
+    }
+  },
+  "d5ca9cbd-06e2-4ddb-93ac-df6c5438b0f0": {
+    "gameId": "d5ca9cbd-06e2-4ddb-93ac-df6c5438b0f0",
+    "players": [
+      "tst1"
+    ],
+    "host": "tst1",
+    "gameStarted": true,
+    "currentRound": 2,
+    "currentLetter": null,
+    "categories": [
+      "Boy",
+      "Girl",
+      "Country",
+      "Food",
+      "Colour",
+      "Car",
+      "Movie / TV Show"
+    ],
+    "submissions": {},
+    "scores": {
+      "tst1": 0
+    }
   }
 }

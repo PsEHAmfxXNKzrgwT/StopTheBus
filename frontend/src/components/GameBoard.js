@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import socket from '../socket';
 
 function GameBoard({ gameState, playerName, answers, setAnswers, setMessage }) {
   const [submissions, setSubmissions] = useState({});
   const [submitted, setSubmitted] = useState(false);
+  const [letter, setLetter] = useState(null);
 
   const handleChange = (category, value) => {
     setAnswers((prev) => ({ ...prev, [category]: value }));
@@ -72,12 +74,16 @@ function GameBoard({ gameState, playerName, answers, setAnswers, setMessage }) {
   };
 
   useEffect(() => {
-    if (!gameState.gameId) return;
-    const interval = setInterval(() => {
-      fetchSubmissions();
-    }, 3000);
-    return () => clearInterval(interval);
-  }, [gameState.gameId]);
+  const handleRoundStarted = ({ letter }) => {
+    setLetter(letter);
+  };
+
+  socket.on('roundStarted', handleRoundStarted);
+
+  return () => {
+    socket.off('roundStarted', handleRoundStarted);
+  };
+}, []);
 
   return (
     <div className="game-board">

@@ -149,9 +149,9 @@ app.post('/start-round', async (req, res) => {
   if (!gameRoom) return handleError(res, "❌ Game not found.", 404);
   if (!gameRoom.gameStarted) return handleError(res, "❌ Game has not started.");
 
-  const letter = getRandomLetter();
-  gameRoom.currentLetter = letter;
-
+const letter = getRandomLetter();
+gameRoom.currentLetter = letter;
+io.emit('roundStarted', { letter });
 
   await saveGameRooms();
 

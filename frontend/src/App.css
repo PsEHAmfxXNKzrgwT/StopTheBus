@@ -86,3 +86,21 @@ input:focus {
   font-size: 1rem;
   font-weight: bold;
 }
+
+.submissions-scores-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 2rem;
+  margin-top: 1.5rem;
+}
+
+.submissions,
+.scores {
+  flex: 1 1 45%;
+  min-width: 300px;
+  padding: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+}

@@ -7,8 +7,6 @@ function GameBoard({ gameState, playerName, answers, setAnswers, setMessage }) {
   const [letter, setLetter] = useState(null);
   const BASE_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:6464';
 
-  console.log("🔁 RENDER: letter state =", letter, "gameState.currentLetter =", gameState.currentLetter);
-
   const handleChange = (category, value) => {
     setAnswers((prev) => ({ ...prev, [category]: value }));
   };
@@ -111,72 +109,124 @@ function GameBoard({ gameState, playerName, answers, setAnswers, setMessage }) {
 
   useEffect(() => {
     const handleRoundStarted = ({ letter }) => {
-      console.log("📥 Received roundStarted:", letter);
       setLetter(letter);
     };
-
     socket.on('roundStarted', handleRoundStarted);
     return () => socket.off('roundStarted', handleRoundStarted);
   }, []);
 
   return (
-    <div className="game-board">
-      <h2>Round {gameState.currentRound}</h2>
-      <h3>Letter: {letter || gameState.currentLetter || 'Waiting...'}</h3>
+    <div className="game-board" style={{ padding: '1rem', maxWidth: '1200px', margin: '0 auto' }}>
+      <h2 style={{ margin: '0.5rem 0' }}>Round {gameState.currentRound}</h2>
+      <h3 style={{ margin: '0.5rem 0' }}>Letter: {letter || gameState.currentLetter || 'Waiting...'}</h3>
 
       {!submitted && (
-        <div className="answer-form">
-          {gameState.categories.map((cat) => (
-            <div key={cat}>
-              <label>{cat}:</label>
-              <input
-                value={answers[cat] || ''}
-                onChange={(e) => handleChange(cat, e.target.value)}
-              />
-            </div>
-          ))}
-          <button onClick={handleSubmit}>✅ Submit Answers</button>
-        </div>
+        <>
+          <div
+            className="answer-form"
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+              gap: '1rem',
+              marginBottom: '1rem',
+            }}
+          >
+            {gameState.categories.map((cat) => (
+              <div key={cat} style={{ display: 'flex', flexDirection: 'column' }}>
+                <label style={{ marginBottom: '0.4rem', fontWeight: 'bold' }}>{cat}</label>
+                <input
+                  style={{
+                    padding: '0.6rem',
+                    fontSize: '1rem',
+                    borderRadius: '6px',
+                    border: '1px solid #ccc',
+                  }}
+                  value={answers[cat] || ''}
+                  onChange={(e) => handleChange(cat, e.target.value)}
+                />
+              </div>
+            ))}
+          </div>
+          <button
+            onClick={handleSubmit}
+            style={{
+              padding: '0.6rem 1.2rem',
+              fontSize: '1rem',
+              borderRadius: '6px',
+              backgroundColor: '#4CAF50',
+              color: '#fff',
+              border: 'none',
+              cursor: 'pointer',
+            }}
+          >
+            ✅ Submit Answers
+          </button>
+        </>
       )}
 
       {submitted && (
-        <div className="submissions">
-          <h3>Submissions</h3>
-          {Object.entries(submissions).map(([player, ans], idx) => (
-            <div key={idx}>
-              <strong>{player}</strong>
-              <ul>
-                {Object.entries(ans).map(([cat, val]) => (
-                  <li key={cat}>
-                    {cat}: {val}
-                  </li>
-                ))}
-              </ul>
-              {gameState.host === playerName && (
-                <div className="score-controls">
-                  <button onClick={() => handleUpdateScore(player, 1)}>+1</button>
-                  <button onClick={() => handleUpdateScore(player, -1)}>-1</button>
-                </div>
-              )}
-            </div>
-          ))}
+        <div
+          className="submission-score-wrapper"
+          style={{
+            display: 'grid',
+            gridTemplateColumns: '1fr 1fr',
+            gap: '1rem',
+            marginTop: '1.5rem',
+            width: '100%',
+          }}
+        >
+          <div style={{ padding: '1rem', border: '1px solid #ddd', borderRadius: '8px' }}>
+            <h3>Submissions</h3>
+            {Object.entries(submissions).map(([player, ans], idx) => (
+              <div key={idx} style={{ marginBottom: '1rem' }}>
+                <strong>{player}</strong>
+                <ul>
+                  {Object.entries(ans).map(([cat, val]) => (
+                    <li key={cat}>
+                      {cat}: {val}
+                    </li>
+                  ))}
+                </ul>
+                {gameState.host === playerName && (
+                  <div>
+                    <button onClick={() => handleUpdateScore(player, 1)}>+1</button>
+                    <button onClick={() => handleUpdateScore(player, -1)}>-1</button>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+
+          <div style={{ padding: '1rem', border: '1px solid #ddd', borderRadius: '8px' }}>
+            <h3>Scores</h3>
+            <ul>
+              {Object.entries(gameState.scores).map(([player, score]) => (
+                <li key={player}>
+                  {player}: {score}
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       )}
 
       {gameState.host === playerName && submitted && (
-        <button onClick={handleNextRound}>➡️ Next Round</button>
+        <button
+          onClick={handleNextRound}
+          style={{
+            marginTop: '1rem',
+            padding: '0.6rem 1.2rem',
+            fontSize: '1rem',
+            borderRadius: '6px',
+            backgroundColor: '#007bff',
+            color: '#fff',
+            border: 'none',
+            cursor: 'pointer',
+          }}
+        >
+          ➡️ Next Round
+        </button>
       )}
-
-      <div className="scores">
-        <h3>Scores</h3>
-        <ul>
-          {Object.entries(gameState.scores).map(([player, score]) => (
-            <li key={player}>
-              {player}: {score}
-            </li>
-          ))}
-        </ul>
-      </div>
     </div>
   );
 }

@@ -66,7 +66,7 @@ function GameBoard({ gameState, playerName, answers, setAnswers, setMessage }) {
         }),
       });
 
-      let nextDataText = await nextRes.text();
+      const nextDataText = await nextRes.text();
       let nextData;
       try {
         nextData = JSON.parse(nextDataText);
@@ -85,7 +85,7 @@ function GameBoard({ gameState, playerName, answers, setAnswers, setMessage }) {
         body: JSON.stringify({ gameId: gameState.gameId }),
       });
 
-      let startDataText = await startRes.text();
+      const startDataText = await startRes.text();
       let startData;
       try {
         startData = JSON.parse(startDataText);
@@ -116,79 +116,43 @@ function GameBoard({ gameState, playerName, answers, setAnswers, setMessage }) {
   }, []);
 
   return (
-    <div className="game-board" style={{ padding: '1rem', maxWidth: '1200px', margin: '0 auto' }}>
-      <h2 style={{ margin: '0.5rem 0' }}>Round {gameState.currentRound}</h2>
-      <h3 style={{ margin: '0.5rem 0' }}>Letter: {letter || gameState.currentLetter || 'Waiting...'}</h3>
+    <div className="game-board">
+      <h2>Round {gameState.currentRound}</h2>
+      <h3>Letter: {letter || gameState.currentLetter || 'Waiting...'}</h3>
 
       {!submitted && (
         <>
-          <div
-            className="answer-form"
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-              gap: '1rem',
-              marginBottom: '1rem',
-            }}
-          >
+          <div className="category-grid">
             {gameState.categories.map((cat) => (
-              <div key={cat} style={{ display: 'flex', flexDirection: 'column' }}>
-                <label style={{ marginBottom: '0.4rem', fontWeight: 'bold' }}>{cat}</label>
+              <div key={cat} className="category-item">
+                <label>{cat}</label>
                 <input
-                  style={{
-                    padding: '0.6rem',
-                    fontSize: '1rem',
-                    borderRadius: '6px',
-                    border: '1px solid #ccc',
-                  }}
                   value={answers[cat] || ''}
                   onChange={(e) => handleChange(cat, e.target.value)}
                 />
               </div>
             ))}
           </div>
-          <button
-            onClick={handleSubmit}
-            style={{
-              padding: '0.6rem 1.2rem',
-              fontSize: '1rem',
-              borderRadius: '6px',
-              backgroundColor: '#4CAF50',
-              color: '#fff',
-              border: 'none',
-              cursor: 'pointer',
-            }}
-          >
+          <button className="submit-button" onClick={handleSubmit}>
             ✅ Submit Answers
           </button>
         </>
       )}
 
       {submitted && (
-        <div
-          className="submission-score-wrapper"
-          style={{
-            display: 'grid',
-            gridTemplateColumns: '1fr 1fr',
-            gap: '1rem',
-            marginTop: '1.5rem',
-            width: '100%',
-          }}
-        >
-          <div style={{ padding: '1rem', border: '1px solid #ddd', borderRadius: '8px' }}>
+        <div className="submission-score-wrapper">
+          <div className="submissions">
             <h3>Submissions</h3>
             {Object.entries(submissions).map(([player, ans], idx) => (
-              <div key={idx} style={{ marginBottom: '1rem' }}>
+              <div key={idx} className="submission-entry">
                 <strong>{player}</strong>
                 <ul>
                   {Object.entries(ans).map(([cat, val]) => (
-                    <li key={cat}>
-                      {cat}: {val}
-                    </li>
+                    <li key={cat}>{cat}: {val}</li>
                   ))}
                 </ul>
                 {gameState.host === playerName && (
-                  <div>
+                  <div className="score-controls">
                     <button onClick={() => handleUpdateScore(player, 1)}>+1</button>
                     <button onClick={() => handleUpdateScore(player, -1)}>-1</button>
                   </div>
@@ -197,13 +161,11 @@ function GameBoard({ gameState, playerName, answers, setAnswers, setMessage }) {
             ))}
           </div>
 
-          <div style={{ padding: '1rem', border: '1px solid #ddd', borderRadius: '8px' }}>
+          <div className="scores">
             <h3>Scores</h3>
             <ul>
               {Object.entries(gameState.scores).map(([player, score]) => (
-                <li key={player}>
-                  {player}: {score}
-                </li>
+                <li key={player}>{player}: {score}</li>
               ))}
             </ul>
           </div>
@@ -211,19 +173,7 @@ function GameBoard({ gameState, playerName, answers, setAnswers, setMessage }) {
       )}
 
       {gameState.host === playerName && submitted && (
-        <button
-          onClick={handleNextRound}
-          style={{
-            marginTop: '1rem',
-            padding: '0.6rem 1.2rem',
-            fontSize: '1rem',
-            borderRadius: '6px',
-            backgroundColor: '#007bff',
-            color: '#fff',
-            border: 'none',
-            cursor: 'pointer',
-          }}
-        >
+        <button className="next-round-button" onClick={handleNextRound}>
           ➡️ Next Round
         </button>
       )}

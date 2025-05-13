@@ -3,6 +3,8 @@
 body, html {
   margin: 0;
   font-family: Arial, sans-serif;
+  background-color: #fff;
+  color: #222;
 }
 
 .app-container {
@@ -28,6 +30,11 @@ nav a:hover {
 
 h1 {
   font-size: 2rem;
+  margin: 0.5rem 0;
+}
+
+h2, h3 {
+  margin: 0.5rem 0;
 }
 
 .message {
@@ -45,7 +52,8 @@ button {
   padding: 10px 20px;
   font-size: 1rem;
   cursor: pointer;
-  margin: 10px;
+  margin-top: 1rem;
+  border-radius: 6px;
 }
 
 button:hover {
@@ -53,9 +61,8 @@ button:hover {
 }
 
 input {
-  padding: 8px;
+  padding: 0.5rem;
   font-size: 1rem;
-  margin: 10px;
   border: 1px solid #ccc;
   border-radius: 5px;
 }
@@ -65,42 +72,90 @@ input:focus {
   border-color: #007bff;
 }
 
-.category-inputs {
-  margin-bottom: 20px;
+/* Game Board Layout */
+
+.game-board {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 1rem;
 }
 
-.category-input-box {
-  margin-bottom: 10px;
+/* Category inputs in grid */
+.category-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
 }
 
-.category-input-box input {
-  width: 100%;
-  padding: 8px;
-}
-
-.scores {
-  margin-top: 20px;
-}
-
-.scores p {
-  font-size: 1rem;
-  font-weight: bold;
-}
-
-.submissions-scores-wrapper {
+.category-item {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: 2rem;
-  margin-top: 1.5rem;
+  flex-direction: column;
+}
+
+.category-item label {
+  font-weight: bold;
+  margin-bottom: 0.25rem;
+}
+
+.category-item input {
+  padding: 0.5rem;
+  font-size: 1rem;
+}
+
+/* Submission + Scores side-by-side */
+.submission-score-wrapper {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-top: 2rem;
 }
 
 .submissions,
 .scores {
-  flex: 1 1 45%;
-  min-width: 300px;
   padding: 1rem;
   border: 1px solid #ddd;
   border-radius: 8px;
   background-color: #f9f9f9;
+}
+
+.submission-entry {
+  margin-bottom: 1rem;
+}
+
+/* Button overrides */
+.submit-button {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  font-size: 1rem;
+  padding: 0.6rem 1.2rem;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.submit-button:hover {
+  background-color: #3e8e41;
+}
+
+.next-round-button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  font-size: 1rem;
+  padding: 0.6rem 1.2rem;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-top: 1.5rem;
+}
+
+.next-round-button:hover {
+  background-color: #0056b3;
+}
+
+/* Responsive tweaks */
+@media (max-width: 768px) {
+  .submission-score-wrapper {
+    grid-template-columns: 1fr;
+  }
 }

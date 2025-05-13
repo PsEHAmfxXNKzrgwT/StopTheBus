@@ -2,8 +2,6 @@ const express = require('express');
 const fs = require('fs');
 const cors = require('cors');
 const { v4: uuidv4 } = require('uuid');
-const http = require('http');
-const { Server } = require('socket.io');
 require('dotenv').config();
 
 const app = express();
@@ -12,6 +10,22 @@ const PORT = process.env.PORT || 6464;
 app.use(cors());
 app.use(express.json());
 
+const http = require('http');
+const { Server } = require('socket.io');
+
+// Create HTTP server and attach Socket.IO
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: '*',
+    methods: ['GET', 'POST'],
+  },
+});
+
+// Confirm socket connections
+io.on('connection', (socket) => {
+  console.log(`🔌 Socket connected: ${socket.id}`);
+});
 
 let gameRooms = {};
 
@@ -53,7 +67,7 @@ loadGameRooms().then(data => {
 });
 
 function generateShortGameId() {
-  return uuidv4();  // Using uuid for better uniqueness
+  return uuidv4();
 }
 
 function getRandomLetter() {
@@ -68,7 +82,6 @@ function handleError(res, message, statusCode = 400) {
   });
 }
 
-// Create a game
 app.post('/create-game', async (req, res) => {
   const { playerName } = req.body;
   if (!playerName) return handleError(res, "❌ Player name is required.");
@@ -96,7 +109,6 @@ app.post('/create-game', async (req, res) => {
   });
 });
 
-// Join a game
 app.post('/join-game', async (req, res) => {
   const { gameId, playerName } = req.body;
   if (!gameId || !playerName) return handleError(res, "❌ Game ID and player name are required.");
@@ -120,7 +132,6 @@ app.post('/join-game', async (req, res) => {
   });
 });
 
-// Start the game (host only)
 app.post('/start-game', async (req, res) => {
   const { gameId, playerName } = req.body;
   const gameRoom = gameRooms[gameId];
@@ -143,10 +154,6 @@ app.post('/start-game', async (req, res) => {
   });
 });
 
-
-
-
-// Start a round
 app.post('/start-round', async (req, res) => {
   const { gameId } = req.body;
   const gameRoom = gameRooms[gameId];
@@ -154,12 +161,11 @@ app.post('/start-round', async (req, res) => {
   if (!gameRoom) return handleError(res, "❌ Game not found.", 404);
   if (!gameRoom.gameStarted) return handleError(res, "❌ Game has not started.");
 
-const letter = getRandomLetter();
-gameRoom.currentLetter = letter;
-console.log("🚀 Emitting roundStarted with letter:", letter);
-io.emit('roundStarted', { letter });
- 
+  const letter = getRandomLetter();
+  gameRoom.currentLetter = letter;
 
+  console.log("🚀 Emitting roundStarted with letter:", letter);
+  io.emit('roundStarted', { letter });
 
   await saveGameRooms();
 
@@ -170,7 +176,6 @@ io.emit('roundStarted', { letter });
   });
 });
 
-// Submit answers
 app.post('/submit-answers', async (req, res) => {
   const { gameId, playerName, answers } = req.body;
   if (!gameId || !playerName || !answers) return handleError(res, "❌ Game ID, playerName, and answers are required.");
@@ -178,6 +183,7 @@ app.post('/submit-answers', async (req, res) => {
   const gameRoom = gameRooms[gameId];
   if (!gameRoom) return handleError(res, "❌ Game not found.", 404);
   if (!gameRoom.gameStarted) return handleError(res, "❌ Game has not started.");
+
   if (gameRoom.submissions[playerName]) return handleError(res, "❌ Already submitted this round.");
 
   const requiredCategories = gameRoom.categories;
@@ -196,7 +202,6 @@ app.post('/submit-answers', async (req, res) => {
   });
 });
 
-// Get submissions
 app.get('/submissions', (req, res) => {
   const { gameId } = req.query;
   if (!gameId) return handleError(res, "❌ Game ID is required.");
@@ -207,7 +212,6 @@ app.get('/submissions', (req, res) => {
   res.status(200).json(gameRoom.submissions || {});
 });
 
-// Update score
 app.post('/update-score', async (req, res) => {
   const { gameId, playerName, score } = req.body;
   if (!gameId || !playerName || typeof score !== 'number') {
@@ -230,8 +234,8 @@ app.post('/update-score', async (req, res) => {
   });
 });
 
-// Advance to next round
 app.post('/next-round', async (req, res) => {
+  console.log("📩 /next-round called with:", req.body);
   const { gameId, playerName } = req.body;
   const gameRoom = gameRooms[gameId];
 
@@ -239,10 +243,10 @@ app.post('/next-round', async (req, res) => {
   if (!gameRoom.gameStarted) return handleError(res, "❌ Game has not started.");
   if (gameRoom.host !== playerName) return handleError(res, "❌ Only the host can start the round.");
 
-  const allPlayersSubmitted = gameRoom.players.every(player => player in gameRoom.submissions);
-  if (!allPlayersSubmitted) {
-    return handleError(res, "⏳ Not all players have submitted.");
-  }
+// const allPlayersSubmitted = gameRoom.players.every(player => player in gameRoom.submissions);
+// if (!allPlayersSubmitted) {
+//   return handleError(res, "⏳ Not all players have submitted.");
+// }
 
   gameRoom.currentRound += 1;
   gameRoom.currentLetter = null;
@@ -255,7 +259,6 @@ app.post('/next-round', async (req, res) => {
   });
 });
 
-// Get full game state
 app.get('/get-game', (req, res) => {
   const { gameId } = req.query;
   if (!gameId) return handleError(res, "❌ Game ID is required.");
@@ -270,20 +273,6 @@ app.get('/get-game', (req, res) => {
   });
 });
 
-// Start server
-const server = http.createServer(app);
-
-const io = new Server(server, {
-  cors: {
-    origin: '*',
-    methods: ['GET', 'POST']
-  }
-});
-
-io.on('connection', (socket) => {
-  console.log(`🔌 Socket connected: ${socket.id}`);
-});
-
 server.listen(PORT, '0.0.0.0', () => {
-  console.log(`🚀 Server running on ${process.env.BACKEND_URL || `http://0.0.0.0:${PORT}`}`);
+  console.log(`🚀 Server running on http://0.0.0.0:${PORT}`);
 });

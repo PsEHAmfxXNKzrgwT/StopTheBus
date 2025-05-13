@@ -6,6 +6,8 @@ function GameBoard({ gameState, playerName, answers, setAnswers, setMessage }) {
   const [submitted, setSubmitted] = useState(false);
   const [letter, setLetter] = useState(null);
 
+  console.log("🔁 RENDER: letter state =", letter, "gameState.currentLetter =", gameState.currentLetter);
+
   const handleChange = (category, value) => {
     setAnswers((prev) => ({ ...prev, [category]: value }));
   };
@@ -55,23 +57,39 @@ function GameBoard({ gameState, playerName, answers, setAnswers, setMessage }) {
   };
 
   const handleNextRound = async () => {
-    const res = await fetch('http://0.0.0.0:6464/next-round', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        gameId: gameState.gameId,
-        playerName,
-      }),
-    });
-    const data = await res.json();
-    if (res.ok) {
-      setSubmitted(false);
-      setAnswers({});
-      setMessage('➡️ Moved to next round.');
-    } else {
-      setMessage(data.message || '❌ Failed to move to next round.');
-    }
-  };
+  const nextRes = await fetch(`${process.env.REACT_APP_BACKEND_URL}/next-round`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      gameId: gameState.gameId,
+      playerName,
+    }),
+  });
+  const nextData = await nextRes.json();
+
+  if (!nextRes.ok) {
+    return setMessage(nextData.message || '❌ Failed to move to next round.');
+  }
+
+  // Now actually start the new round (emit the letter)
+  const startRes = await fetch(`${process.env.REACT_APP_BACKEND_URL}/start-round`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      gameId: gameState.gameId,
+    }),
+  });
+  const startData = await startRes.json();
+
+  if (!startRes.ok) {
+    return setMessage(startData.message || '❌ Failed to start new round.');
+  }
+
+  setSubmitted(false);
+  setAnswers({});
+  setMessage('➡️ New round started!');
+};
+
 
   // ✅ FIX: Socket listener to receive the letter
 useEffect(() => {
@@ -83,6 +101,8 @@ useEffect(() => {
   socket.on('roundStarted', handleRoundStarted);
   return () => socket.off('roundStarted', handleRoundStarted);
 }, []);
+
+
 
 
   return (

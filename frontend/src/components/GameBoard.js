@@ -12,6 +12,9 @@ function GameBoard({ gameState, setGameState, playerName, answers, setAnswers, s
     setAnswers((prev) => ({ ...prev, [category]: value }));
   };
 
+
+
+
   const handleSubmit = async () => {
     if (submitted) return setMessage('✅ Already submitted!');
     const res = await fetch(`${BASE_URL}/submit-answers`, {
@@ -27,10 +30,12 @@ function GameBoard({ gameState, setGameState, playerName, answers, setAnswers, s
     if (res.ok) {
       setSubmitted(true);
       setMessage('✅ Answers submitted!');
+      fetchSubmissions(); // ✅ fetch latest submissions and show them
     } else {
       setMessage(data.message || '❌ Submission failed.');
     }
   };
+
 
   const fetchSubmissions = async () => {
     const res = await fetch(`${BASE_URL}/submissions?gameId=${gameState.gameId}`);
@@ -72,45 +77,45 @@ function GameBoard({ gameState, setGameState, playerName, answers, setAnswers, s
   };
 
   const handleNextRound = async () => {
-  if (roundInProgress) return;
+    if (roundInProgress) return;
 
-  setRoundInProgress(true);
+    setRoundInProgress(true);
 
-  try {
-    const res = await fetch(`${BASE_URL}/next-round`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        gameId: gameState.gameId,
-        playerName,
-      }),
-    });
+    try {
+      const res = await fetch(`${BASE_URL}/next-round`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          gameId: gameState.gameId,
+          playerName,
+        }),
+      });
 
-    const data = await res.json();
+      const data = await res.json();
 
-    if (!res.ok) {
-      return setMessage(data.message || '❌ Failed to move to next round.');
+      if (!res.ok) {
+        return setMessage(data.message || '❌ Failed to move to next round.');
+      }
+
+      setSubmitted(false);
+      setAnswers({});
+      setMessage('➡️ New round started!');
+
+      // ✅ Use data directly instead of waiting for socket or refetch
+      setGameState((prev) => ({
+        ...prev,
+        currentRound: data.currentRound,
+        currentLetter: data.currentLetter,
+      }));
+
+      console.log("✅ Letter received from /next-round:", data.currentLetter);
+    } catch (err) {
+      console.error('❌ handleNextRound error:', err);
+      setMessage('❌ An error occurred.');
+    } finally {
+      setRoundInProgress(false);
     }
-
-    setSubmitted(false);
-    setAnswers({});
-    setMessage('➡️ New round started!');
-
-    // ✅ Use data directly instead of waiting for socket or refetch
-    setGameState((prev) => ({
-      ...prev,
-      currentRound: data.currentRound,
-      currentLetter: data.currentLetter,
-    }));
-
-    console.log("✅ Letter received from /next-round:", data.currentLetter);
-  } catch (err) {
-    console.error('❌ handleNextRound error:', err);
-    setMessage('❌ An error occurred.');
-  } finally {
-    setRoundInProgress(false);
-  }
-};
+  };
 
 
   useEffect(() => {
@@ -124,6 +129,19 @@ function GameBoard({ gameState, setGameState, playerName, answers, setAnswers, s
   }, [setGameState]);
 
   console.log("🕵️ gameState.currentRound =", gameState.currentRound);
+
+  const getCategoryEmoji = (category) => {
+    switch (category) {
+      case 'Boy': return '👦';
+      case 'Girl': return '👧';
+      case 'Country': return '🌍';
+      case 'Food': return '🍽️';
+      case 'Colour': return '🎨';
+      case 'Car': return '🚗';
+      case 'Movie / TV Show': return '🎬';
+      default: return '❓';
+    }
+  };
 
   return (
     <div className="game-board">
@@ -158,11 +176,17 @@ function GameBoard({ gameState, setGameState, playerName, answers, setAnswers, s
             {Object.entries(submissions).map(([player, ans], idx) => (
               <div key={idx} className="submission-entry">
                 <strong>{player}</strong>
-                <ul>
-                  {Object.entries(ans).map(([cat, val]) => (
-                    <li key={cat}>{cat}: {val}</li>
-                  ))}
-                </ul>
+                <table className="submission-table">
+                  <tbody>
+                    {Object.entries(ans).map(([cat, val]) => (
+                      <tr key={cat}>
+                        <td className="emoji">{getCategoryEmoji(cat)}</td>
+                        <td className="category-name"><strong>{cat}</strong></td>
+                        <td className="answer">{val}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
                 {gameState.host === playerName && (
                   <div className="score-controls">
                     <button onClick={() => handleUpdateScore(player, 1)}>+1</button>
@@ -185,10 +209,16 @@ function GameBoard({ gameState, setGameState, playerName, answers, setAnswers, s
       )}
 
       {gameState.host === playerName && (
-  <button className="next-round-button" onClick={handleNextRound} disabled={roundInProgress || gameState.currentRound > 0 && !submitted}>
-    ➡️ Next Round
-  </button>
-)}
+        <button
+          className="next-round-button"
+          onClick={handleNextRound}
+          disabled={roundInProgress || (gameState.currentRound > 0 && !submitted)}
+        >
+          ➡️ {gameState.currentRound === 0 ? 'Start Round' : 'Next Round'}
+        </button>
+
+
+      )}
     </div>
   );
 }

@@ -2904,5 +2904,120 @@
     "scores": {
       "test": 0
     }
+  },
+  "7b6fc8dc-23b7-4cb3-951d-ff766f98933f": {
+    "gameId": "7b6fc8dc-23b7-4cb3-951d-ff766f98933f",
+    "players": [
+      "test"
+    ],
+    "host": "test",
+    "gameStarted": true,
+    "currentRound": 1,
+    "currentLetter": null,
+    "categories": [
+      "Boy",
+      "Girl",
+      "Country",
+      "Food",
+      "Colour",
+      "Car",
+      "Movie / TV Show"
+    ],
+    "submissions": {},
+    "scores": {
+      "test": 0
+    }
+  },
+  "c114fe25-36fa-4e9b-b459-4252e6d91f4c": {
+    "gameId": "c114fe25-36fa-4e9b-b459-4252e6d91f4c",
+    "players": [
+      "test"
+    ],
+    "host": "test",
+    "gameStarted": true,
+    "currentRound": 1,
+    "currentLetter": null,
+    "categories": [
+      "Boy",
+      "Girl",
+      "Country",
+      "Food",
+      "Colour",
+      "Car",
+      "Movie / TV Show"
+    ],
+    "submissions": {},
+    "scores": {
+      "test": 0
+    }
+  },
+  "3577daec-0e73-469c-a577-4ed14fefc99f": {
+    "gameId": "3577daec-0e73-469c-a577-4ed14fefc99f",
+    "players": [
+      "test"
+    ],
+    "host": "test",
+    "gameStarted": true,
+    "currentRound": 1,
+    "currentLetter": "A",
+    "categories": [
+      "Boy",
+      "Girl",
+      "Country",
+      "Food",
+      "Colour",
+      "Car",
+      "Movie / TV Show"
+    ],
+    "submissions": {},
+    "scores": {
+      "test": 0
+    }
+  },
+  "84cfc69c-f379-4e55-ade1-6bd40c3e8ddd": {
+    "gameId": "84cfc69c-f379-4e55-ade1-6bd40c3e8ddd",
+    "players": [
+      "test"
+    ],
+    "host": "test",
+    "gameStarted": true,
+    "currentRound": 1,
+    "currentLetter": "L",
+    "categories": [
+      "Boy",
+      "Girl",
+      "Country",
+      "Food",
+      "Colour",
+      "Car",
+      "Movie / TV Show"
+    ],
+    "submissions": {},
+    "scores": {
+      "test": 0
+    }
+  },
+  "81186913-c822-4d1c-a294-347399b3fc0e": {
+    "gameId": "81186913-c822-4d1c-a294-347399b3fc0e",
+    "players": [
+      "test"
+    ],
+    "host": "test",
+    "gameStarted": true,
+    "currentRound": 1,
+    "currentLetter": "B",
+    "categories": [
+      "Boy",
+      "Girl",
+      "Country",
+      "Food",
+      "Colour",
+      "Car",
+      "Movie / TV Show"
+    ],
+    "submissions": {},
+    "scores": {
+      "test": 0
+    }
   }
 }

@@ -10,6 +10,8 @@ import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
 import Settings from './Settings';
 import Lobby from './components/Lobby';
 import GameBoard from './components/GameBoard';
+import ThemeSelector from './components/ThemeSelector'; // ✅ imported externally
+import DarkModeToggle from './components/DarkModeToggle';
 
 import {
   createTheme,
@@ -20,66 +22,37 @@ import CssBaseline from '@mui/material/CssBaseline';
 import IconButton from '@mui/material/IconButton';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
-import { Button, Stack } from '@mui/material';
 
 const ColorModeContext = createContext();
 
 const themes = {
-  light: {
-    palette: {
-      mode: 'light',
-    }
-  },
+  light: { palette: { mode: 'light' } },
   softDark: {
     palette: {
       mode: 'dark',
-      background: {
-        default: '#1e1e1e',
-        paper: '#2a2a2a'
-      },
-      text: {
-        primary: '#ffffff',
-        secondary: '#bbbbbb'
-      }
+      background: { default: '#1e1e1e', paper: '#2a2a2a' },
+      text: { primary: '#ffffff', secondary: '#bbbbbb' }
     }
   },
   black: {
     palette: {
       mode: 'dark',
-      background: {
-        default: '#000000',
-        paper: '#121212'
-      },
-      text: {
-        primary: '#ffffff',
-        secondary: '#888888'
-      }
+      background: { default: '#000000', paper: '#121212' },
+      text: { primary: '#ffffff', secondary: '#888888' }
     }
   },
   blue: {
     palette: {
       mode: 'dark',
-      background: {
-        default: '#0a192f',
-        paper: '#112240'
-      },
-      text: {
-        primary: '#ffffff',
-        secondary: '#90caf9'
-      }
+      background: { default: '#0a192f', paper: '#112240' },
+      text: { primary: '#ffffff', secondary: '#90caf9' }
     }
   },
   sepia: {
     palette: {
       mode: 'dark',
-      background: {
-        default: '#2b1b0e',
-        paper: '#3c2f2f'
-      },
-      text: {
-        primary: '#f5e6c4',
-        secondary: '#c9a97e'
-      }
+      background: { default: '#2b1b0e', paper: '#3c2f2f' },
+      text: { primary: '#f5e6c4', secondary: '#c9a97e' }
     }
   }
 };
@@ -91,13 +64,10 @@ const CustomThemeProvider = ({ children }) => {
     localStorage.setItem('themeName', themeName);
   }, [themeName]);
 
-  const colorMode = useMemo(
-    () => ({
-      setTheme: (name) => setThemeName(name),
-      current: themeName
-    }),
-    [themeName]
-  );
+  const colorMode = useMemo(() => ({
+    setTheme: (name) => setThemeName(name),
+    current: themeName
+  }), [themeName]);
 
   const theme = useMemo(() => createTheme(themes[themeName] || themes.softDark), [themeName]);
 
@@ -113,49 +83,7 @@ const CustomThemeProvider = ({ children }) => {
 
 export const useColorMode = () => useContext(ColorModeContext);
 
-const DarkModeToggle = () => {
-  const theme = useTheme();
-  const { current, setTheme } = useColorMode();
 
-  const isDark = theme.palette.mode === 'dark';
-
-  const toggleMode = () => {
-    if (current === 'light') setTheme('softDark');
-    else setTheme('light');
-  };
-
-  return (
-    <IconButton onClick={toggleMode} color="inherit" style={{ float: 'right' }}>
-      {isDark ? <Brightness7Icon /> : <Brightness4Icon />}
-    </IconButton>
-  );
-};
-
-const ThemeSelector = () => {
-  const { setTheme, current } = useColorMode();
-  const options = [
-    { label: 'Soft Dark', name: 'softDark' },
-    { label: 'Pure Black', name: 'black' },
-    { label: 'Dark Blue', name: 'blue' },
-    { label: 'Sepia', name: 'sepia' },
-    { label: 'Light', name: 'light' }
-  ];
-
-  return (
-    <Stack direction="row" spacing={1} sx={{ mb: 2, flexWrap: 'wrap', justifyContent: 'center' }}>
-      {options.map((t) => (
-        <Button
-          key={t.name}
-          variant={t.name === current ? 'contained' : 'outlined'}
-          size="small"
-          onClick={() => setTheme(t.name)}
-        >
-          {t.label}
-        </Button>
-      ))}
-    </Stack>
-  );
-};
 
 function AppContent() {
   const [gameState, setGameState] = useState({
@@ -174,7 +102,6 @@ function AppContent() {
   const [answers, setAnswers] = useState({});
   const [message, setMessage] = useState('');
 
-  // Periodically refresh game state
   useEffect(() => {
     if (!gameState.gameId || !gameState.gameStarted) return;
 
@@ -234,10 +161,7 @@ function AppContent() {
         </nav>
 
         <Routes>
-          <Route
-            path="/settings"
-            element={<Settings />}
-          />
+          <Route path="/settings" element={<Settings />} />
           <Route
             path="/"
             element={

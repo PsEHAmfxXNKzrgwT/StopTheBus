@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button, Stack } from '@mui/material';
-import { useColorMode } from './App'; // adjust path if needed
+import { useColorMode } from '../App'; // adjust if needed
 
 const themes = [
   { label: 'Soft Dark', name: 'softDark' },

@@ -93,7 +93,7 @@ app.post('/create-game', async (req, res) => {
     players: [playerName],
     host: playerName,
     gameStarted: false,
-    currentRound: 1,
+    currentRound: 0,
     currentLetter: null,
     categories: ['Boy', 'Girl', 'Country', 'Food', 'Colour', 'Car', 'Movie / TV Show'],
     submissions: {},
@@ -142,7 +142,11 @@ app.post('/start-game', async (req, res) => {
   if (gameRoom.host !== playerName) return handleError(res, "❌ Only the host can start the game.");
 
   gameRoom.gameStarted = true;
-  gameRoom.currentRound = 1;
+
+  // ❌ Do NOT pre-increment currentRound
+  gameRoom.currentRound = 0;
+
+  // ✅ Keep everything else reset
   gameRoom.currentLetter = null;
   gameRoom.submissions = {};
   gameRoom.scores = Object.fromEntries(gameRoom.players.map(p => [p, 0]));
@@ -154,12 +158,15 @@ app.post('/start-game', async (req, res) => {
   });
 });
 
+
 app.post('/start-round', async (req, res) => {
   const { gameId } = req.body;
   const gameRoom = gameRooms[gameId];
 
   if (!gameRoom) return handleError(res, "❌ Game not found.", 404);
   if (!gameRoom.gameStarted) return handleError(res, "❌ Game has not started.");
+
+  // gameRoom.currentRound = (gameRoom.currentRound || 0) + 1;
 
   const letter = getRandomLetter();
   gameRoom.currentLetter = letter;
@@ -175,6 +182,7 @@ app.post('/start-round', async (req, res) => {
     currentLetter: letter,
   });
 });
+
 
 app.post('/submit-answers', async (req, res) => {
   const { gameId, playerName, answers } = req.body;
@@ -243,21 +251,23 @@ app.post('/next-round', async (req, res) => {
   if (!gameRoom.gameStarted) return handleError(res, "❌ Game has not started.");
   if (gameRoom.host !== playerName) return handleError(res, "❌ Only the host can start the round.");
 
-// const allPlayersSubmitted = gameRoom.players.every(player => player in gameRoom.submissions);
-// if (!allPlayersSubmitted) {
-//   return handleError(res, "⏳ Not all players have submitted.");
-// }
-
   gameRoom.currentRound += 1;
-  gameRoom.currentLetter = null;
+  gameRoom.currentLetter = getRandomLetter();
   gameRoom.submissions = {};
+
+  io.emit('roundStarted', { letter: gameRoom.currentLetter });
+
+  console.log(`✅ Moved to Round ${gameRoom.currentRound} with letter ${gameRoom.currentLetter}`);
 
   await saveGameRooms();
   res.status(200).json({
     success: true,
-    message: "➡️ Moved to next round."
+    message: "➡️ New round started.",
+    currentRound: gameRoom.currentRound,
+    currentLetter: gameRoom.currentLetter,
   });
 });
+
 
 app.get('/get-game', (req, res) => {
   const { gameId } = req.query;

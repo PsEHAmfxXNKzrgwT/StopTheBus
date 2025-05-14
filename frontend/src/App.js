@@ -8,7 +8,7 @@ import GameBoard from './components/GameBoard';
 function App() {
   const [gameState, setGameState] = useState({
     gameId: null,
-    currentRound: 1,
+    currentRound: 0,
     scores: {},
     gameStarted: false,
     categories: ['Boy', 'Girl', 'Country', 'Food', 'Colour', 'Car', 'Movie / TV Show'],
@@ -33,82 +33,55 @@ function App() {
     localStorage.setItem('darkMode', newMode);
   };
 
+  // Periodically refresh game state
   useEffect(() => {
-    if (!gameState.gameId) return;
-    const interval = setInterval(async () => {
-      try {
-        const res = await fetch(`http://localhost:6464/get-game?gameId=${gameState.gameId}`);
-        if (res.ok) {
-          const data = await res.json();
-          setGameState((prev) => ({
-            ...prev,
-            players: data.players,
-            gameStarted: data.gameStarted,
-            currentRound: data.currentRound,
-            currentLetter: data.currentLetter,
-            scores: data.scores || prev.scores,
-            host: data.host,
-          }));
-        }
-      } catch {}
-    }, 3000);
-    return () => clearInterval(interval);
-  }, [gameState.gameId]);
+  if (!gameState.gameId || !gameState.gameStarted) return;
 
-  const handleStartGame = async () => {
-    if (!gameState.gameId) return setMessage("❌ No game to start.");
+  const interval = setInterval(async () => {
     try {
-      const res = await fetch('http://localhost:6464/start-game', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ gameId: gameState.gameId, playerName }),
-      });
-
+      const res = await fetch(`http://localhost:6464/get-game?gameId=${gameState.gameId}`);
       if (res.ok) {
-        setGameState((prev) => ({ ...prev, gameStarted: true, currentRound: 1 }));
-        setMessage("🎮 Game started!");
-        await handleStartRound();
-      } else {
-        const text = await res.text();
-        setMessage("❌ " + text);
+        const data = await res.json();
+        setGameState((prev) => ({
+          ...prev,
+          players: data.players,
+          gameStarted: data.gameStarted,
+          currentRound: data.currentRound,
+          currentLetter: data.currentLetter,
+          scores: data.scores || prev.scores,
+          host: data.host,
+        }));
       }
     } catch {
-      setMessage('❌ Error starting game.');
+      // silent error
     }
-  };
+  }, 3000);
 
-  const handleStartRound = async () => {
-    try {
-      const nextRoundRes = await fetch('http://localhost:6464/next-round', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ gameId: gameState.gameId, playerName }),
-      });
+  return () => clearInterval(interval);
+}, [gameState.gameId, gameState.gameStarted]);
 
-      const nextRoundText = await nextRoundRes.text();
-      if (!nextRoundRes.ok) {
-        return setMessage(`⚠️ ${nextRoundText}`);
-      }
+  const handleStartGame = async () => {
+  if (!gameState.gameId) return setMessage("❌ No game to start.");
 
-      const res = await fetch('http://localhost:6464/start-round', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ gameId: gameState.gameId }),
-      });
+  try {
+    const res = await fetch('http://localhost:6464/start-game', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ gameId: gameState.gameId, playerName }),
+    });
 
-      const data = await res.json();
-      setGameState((prev) => ({
-        ...prev,
-        currentRound: data.currentRound,
-        currentLetter: data.currentLetter,
-      }));
-
-      setAnswers({});
-      setMessage(`🔤 New round started! Letter: ${data.currentLetter}`);
-    } catch (err) {
-      setMessage('❌ Error starting new round.');
+    if (res.ok) {
+      setGameState((prev) => ({ ...prev, gameStarted: true }));
+      setMessage("🎮 Game started! Click ➡️ Next Round to begin.");
+    } else {
+      const text = await res.text();
+      setMessage("❌ " + text);
     }
-  };
+  } catch {
+    setMessage('❌ Error starting game.');
+  }
+};
+
 
   return (
     <Router>
@@ -120,7 +93,10 @@ function App() {
 
         <Routes>
           <Route path="/settings" element={
-            <Settings toggleDarkMode={toggleDarkMode} currentMode={darkMode ? 'dark' : 'light'} />
+            <Settings
+              toggleDarkMode={toggleDarkMode}
+              currentMode={darkMode ? 'dark' : 'light'}
+            />
           } />
           <Route path="/" element={
             !gameState.gameStarted ? (
@@ -133,11 +109,11 @@ function App() {
                 gameState={gameState}
                 setMessage={setMessage}
                 handleStartGame={handleStartGame}
-                handleStartRound={handleStartRound}
               />
             ) : (
               <GameBoard
                 gameState={gameState}
+                setGameState={setGameState}
                 playerName={playerName}
                 answers={answers}
                 setAnswers={setAnswers}

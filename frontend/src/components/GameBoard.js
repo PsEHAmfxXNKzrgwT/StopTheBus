@@ -2,10 +2,10 @@ import React, { useEffect, useState } from 'react';
 import socket from '../socket';
 import './GameBoard.css';
 
-function GameBoard({ gameState, playerName, answers, setAnswers, setMessage }) {
+function GameBoard({ gameState, setGameState, playerName, answers, setAnswers, setMessage }) {
   const [submissions, setSubmissions] = useState({});
   const [submitted, setSubmitted] = useState(false);
-  const [letter, setLetter] = useState(null);
+  const [roundInProgress, setRoundInProgress] = useState(false);
   const BASE_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:6464';
 
   const handleChange = (category, value) => {
@@ -38,6 +38,21 @@ function GameBoard({ gameState, playerName, answers, setAnswers, setMessage }) {
     setSubmissions(data);
   };
 
+  const fetchGameState = async () => {
+    if (!gameState?.gameId) return;
+    try {
+      const res = await fetch(`${BASE_URL}/game-state?gameId=${gameState.gameId}`);
+      const data = await res.json();
+      if (res.ok) {
+        setGameState(data);
+      } else {
+        setMessage(data.message || '❌ Failed to fetch game state.');
+      }
+    } catch (err) {
+      console.error('❌ Failed to fetch game state:', err);
+    }
+  };
+
   const handleUpdateScore = async (player, delta) => {
     const res = await fetch(`${BASE_URL}/update-score`, {
       method: 'POST',
@@ -57,69 +72,63 @@ function GameBoard({ gameState, playerName, answers, setAnswers, setMessage }) {
   };
 
   const handleNextRound = async () => {
-    try {
-      const nextRes = await fetch(`${BASE_URL}/next-round`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          gameId: gameState.gameId,
-          playerName,
-        }),
-      });
+  if (roundInProgress) return;
 
-      const nextDataText = await nextRes.text();
-      let nextData;
-      try {
-        nextData = JSON.parse(nextDataText);
-      } catch (err) {
-        console.error("❌ /next-round returned invalid JSON:", nextDataText);
-        return setMessage('❌ Invalid response from server on next round.');
-      }
+  setRoundInProgress(true);
 
-      if (!nextRes.ok) {
-        return setMessage(nextData.message || '❌ Failed to move to next round.');
-      }
+  try {
+    const res = await fetch(`${BASE_URL}/next-round`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        gameId: gameState.gameId,
+        playerName,
+      }),
+    });
 
-      const startRes = await fetch(`${BASE_URL}/start-round`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ gameId: gameState.gameId }),
-      });
+    const data = await res.json();
 
-      const startDataText = await startRes.text();
-      let startData;
-      try {
-        startData = JSON.parse(startDataText);
-      } catch (err) {
-        console.error("❌ /start-round returned invalid JSON:", startDataText);
-        return setMessage('❌ Invalid response from server on round start.');
-      }
-
-      if (!startRes.ok) {
-        return setMessage(startData.message || '❌ Failed to start new round.');
-      }
-
-      setSubmitted(false);
-      setAnswers({});
-      setMessage('➡️ New round started!');
-    } catch (err) {
-      console.error('❌ handleNextRound error:', err);
-      setMessage('❌ An error occurred.');
+    if (!res.ok) {
+      return setMessage(data.message || '❌ Failed to move to next round.');
     }
-  };
+
+    setSubmitted(false);
+    setAnswers({});
+    setMessage('➡️ New round started!');
+
+    // ✅ Use data directly instead of waiting for socket or refetch
+    setGameState((prev) => ({
+      ...prev,
+      currentRound: data.currentRound,
+      currentLetter: data.currentLetter,
+    }));
+
+    console.log("✅ Letter received from /next-round:", data.currentLetter);
+  } catch (err) {
+    console.error('❌ handleNextRound error:', err);
+    setMessage('❌ An error occurred.');
+  } finally {
+    setRoundInProgress(false);
+  }
+};
+
 
   useEffect(() => {
     const handleRoundStarted = ({ letter }) => {
-      setLetter(letter);
+      // ✅ Save the letter into gameState for consistent display
+      setGameState((prev) => ({ ...prev, currentLetter: letter }));
     };
+
     socket.on('roundStarted', handleRoundStarted);
     return () => socket.off('roundStarted', handleRoundStarted);
-  }, []);
+  }, [setGameState]);
+
+  console.log("🕵️ gameState.currentRound =", gameState.currentRound);
 
   return (
     <div className="game-board">
       <h2>Round {gameState.currentRound}</h2>
-      <h3>Letter: {letter || gameState.currentLetter || 'Waiting...'}</h3>
+      <h3>Letter: {gameState.currentLetter || 'Waiting...'}</h3>
 
       {!submitted && (
         <>
@@ -175,11 +184,11 @@ function GameBoard({ gameState, playerName, answers, setAnswers, setMessage }) {
         </div>
       )}
 
-      {gameState.host === playerName && submitted && (
-        <button className="next-round-button" onClick={handleNextRound}>
-          ➡️ Next Round
-        </button>
-      )}
+      {gameState.host === playerName && (
+  <button className="next-round-button" onClick={handleNextRound} disabled={roundInProgress || gameState.currentRound > 0 && !submitted}>
+    ➡️ Next Round
+  </button>
+)}
     </div>
   );
 }

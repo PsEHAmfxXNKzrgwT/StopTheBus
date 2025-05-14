@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import socket from '../socket';
+import './GameBoard.css';
 
 function GameBoard({ gameState, playerName, answers, setAnswers, setMessage }) {
   const [submissions, setSubmissions] = useState({});
@@ -122,17 +123,19 @@ function GameBoard({ gameState, playerName, answers, setAnswers, setMessage }) {
 
       {!submitted && (
         <>
-          <div className="category-grid">
+          <div className="category-row">
             {gameState.categories.map((cat) => (
-              <div key={cat} className="category-item">
+              <div key={cat} className="category-box">
                 <label>{cat}</label>
                 <input
+                  type="text"
                   value={answers[cat] || ''}
                   onChange={(e) => handleChange(cat, e.target.value)}
                 />
               </div>
             ))}
           </div>
+
           <button className="submit-button" onClick={handleSubmit}>
             ✅ Submit Answers
           </button>

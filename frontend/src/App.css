@@ -3,17 +3,19 @@
 body, html {
   margin: 0;
   font-family: Arial, sans-serif;
-  background-color: #fff;
-  color: #222;
 }
 
+/* Container */
 .app-container {
   display: flex;
   flex-direction: column;
   align-items: center;
   padding: 20px;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  min-height: 100vh;
 }
 
+/* Navigation */
 nav {
   margin-bottom: 20px;
 }
@@ -21,141 +23,47 @@ nav {
 nav a {
   margin: 0 10px;
   text-decoration: none;
-  color: #007bff;
+  color: inherit;
 }
 
 nav a:hover {
   text-decoration: underline;
 }
 
+/* Heading */
 h1 {
   font-size: 2rem;
-  margin: 0.5rem 0;
+  margin: 0 0 10px;
 }
 
-h2, h3 {
-  margin: 0.5rem 0;
-}
-
+/* Message box */
 .message {
-  background-color: #f9f9f9;
-  padding: 10px;
+  background-color: rgba(0, 0, 0, 0.05); /* Light mode fallback */
+  color: inherit;
+  padding: 10px 15px;
   border-radius: 5px;
   margin-top: 20px;
   text-align: center;
+  width: 100%;
+  max-width: 500px;
+  transition: background-color 0.3s ease;
 }
 
+/* Button reset + theme-aware */
 button {
-  background-color: #007bff;
+  background-color: #1976d2; /* MUI primary color */
   color: white;
   border: none;
   padding: 10px 20px;
   font-size: 1rem;
   cursor: pointer;
-  margin-top: 1rem;
-  border-radius: 6px;
+  margin: 10px;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
 }
 
 button:hover {
-  background-color: #0056b3;
+  background-color: #1565c0;
 }
 
-input {
-  padding: 0.5rem;
-  font-size: 1rem;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-}
-
-input:focus {
-  outline: none;
-  border-color: #007bff;
-}
-
-/* Game Board Layout */
-
-.game-board {
-  max-width: 1000px;
-  margin: 0 auto;
-  padding: 1rem;
-}
-
-/* Category inputs in grid */
-.category-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 1rem;
-  margin-bottom: 1rem;
-}
-
-.category-item {
-  display: flex;
-  flex-direction: column;
-}
-
-.category-item label {
-  font-weight: bold;
-  margin-bottom: 0.25rem;
-}
-
-.category-item input {
-  padding: 0.5rem;
-  font-size: 1rem;
-}
-
-/* Submission + Scores side-by-side */
-.submission-score-wrapper {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-  margin-top: 2rem;
-}
-
-.submissions,
-.scores {
-  padding: 1rem;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  background-color: #f9f9f9;
-}
-
-.submission-entry {
-  margin-bottom: 1rem;
-}
-
-/* Button overrides */
-.submit-button {
-  background-color: #4CAF50;
-  color: white;
-  border: none;
-  font-size: 1rem;
-  padding: 0.6rem 1.2rem;
-  border-radius: 6px;
-  cursor: pointer;
-}
-
-.submit-button:hover {
-  background-color: #3e8e41;
-}
-
-.next-round-button {
-  background-color: #007bff;
-  color: white;
-  border: none;
-  font-size: 1rem;
-  padding: 0.6rem 1.2rem;
-  border-radius: 6px;
-  cursor: pointer;
-  margin-top: 1.5rem;
-}
-
-.next-round-button:hover {
-  background-color: #0056b3;
-}
-
-/* Responsive tweaks */
-@media (max-width: 768px) {
-  .submission-score-wrapper {
-    grid-template-columns: 1fr;
-  }
-}
+/* Dark mode adjustments via MUI (no custom data-theme needed) */

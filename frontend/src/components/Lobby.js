@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import socket from '../socket';
 
 function Lobby({
   playerName,
@@ -9,7 +10,6 @@ function Lobby({
   gameState,
   setMessage,
   handleStartGame,
-  handleStartRound,
 }) {
   const handleCreateGame = async () => {
     if (!playerName) return setMessage("❌ Please enter a player name.");
@@ -20,13 +20,15 @@ function Lobby({
         body: JSON.stringify({ playerName }),
       });
       const data = await res.json();
-      setGameState((prev) => ({
-        ...prev,
+
+      setGameState({
         gameId: data.gameId,
         players: [playerName],
         host: playerName,
         gameStarted: false,
-      }));
+        scores: {},
+      });
+
       setMessage(`✅ Game created! Your game ID is: ${data.gameId}`);
     } catch {
       setMessage('❌ Error creating game.');
@@ -45,19 +47,52 @@ function Lobby({
         body: JSON.stringify({ gameId: gameIdInput, playerName }),
       });
       const data = await res.json();
-      setGameState((prev) => ({
-        ...prev,
+
+      setGameState({
         gameId: gameIdInput,
         players: data.gameRoom.players,
+        host: data.gameRoom.host,
         gameStarted: data.gameRoom.gameStarted,
         scores: data.gameRoom.scores,
-        host: data.gameRoom.host,
-      }));
+      });
+
       setMessage(`✅ Joined game ${gameIdInput}`);
     } catch {
       setMessage("❌ Couldn't join game.");
     }
   };
+
+  // ✅ Emit joinGame when gameId and playerName are ready (applies to host and players)
+  useEffect(() => {
+    if (gameState.gameId && playerName) {
+      socket.emit('joinGame', {
+        gameId: gameState.gameId,
+        playerName,
+      });
+    }
+  }, [gameState.gameId, playerName]);
+
+  // 👂 Listen for playerJoined socket event
+  useEffect(() => {
+    socket.on('playerJoined', (updatedGameRoom) => {
+      setGameState((prev) => ({
+        ...prev,
+        players: updatedGameRoom.players,
+        scores: updatedGameRoom.scores,
+      }));
+    });
+
+    return () => socket.off('playerJoined');
+  }, [setGameState]);
+
+  // 👂 Listen for gameStarted socket event
+  useEffect(() => {
+    socket.on('gameStarted', (updatedGameRoom) => {
+      setGameState(updatedGameRoom);
+    });
+
+    return () => socket.off('gameStarted');
+  }, [setGameState]);
 
   return (
     <div className="lobby-container">

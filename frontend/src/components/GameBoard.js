@@ -12,9 +12,6 @@ function GameBoard({ gameState, setGameState, playerName, answers, setAnswers, s
     setAnswers((prev) => ({ ...prev, [category]: value }));
   };
 
-
-
-
   const handleSubmit = async () => {
     if (submitted) return setMessage('✅ Already submitted!');
     const res = await fetch(`${BASE_URL}/submit-answers`, {
@@ -30,32 +27,16 @@ function GameBoard({ gameState, setGameState, playerName, answers, setAnswers, s
     if (res.ok) {
       setSubmitted(true);
       setMessage('✅ Answers submitted!');
-      fetchSubmissions(); // ✅ fetch latest submissions and show them
+      fetchSubmissions();
     } else {
       setMessage(data.message || '❌ Submission failed.');
     }
   };
 
-
   const fetchSubmissions = async () => {
     const res = await fetch(`${BASE_URL}/submissions?gameId=${gameState.gameId}`);
     const data = await res.json();
     setSubmissions(data);
-  };
-
-  const fetchGameState = async () => {
-    if (!gameState?.gameId) return;
-    try {
-      const res = await fetch(`${BASE_URL}/game-state?gameId=${gameState.gameId}`);
-      const data = await res.json();
-      if (res.ok) {
-        setGameState(data);
-      } else {
-        setMessage(data.message || '❌ Failed to fetch game state.');
-      }
-    } catch (err) {
-      console.error('❌ Failed to fetch game state:', err);
-    }
   };
 
   const handleUpdateScore = async (player, delta) => {
@@ -78,7 +59,6 @@ function GameBoard({ gameState, setGameState, playerName, answers, setAnswers, s
 
   const handleNextRound = async () => {
     if (roundInProgress) return;
-
     setRoundInProgress(true);
 
     try {
@@ -100,15 +80,7 @@ function GameBoard({ gameState, setGameState, playerName, answers, setAnswers, s
       setSubmitted(false);
       setAnswers({});
       setMessage('➡️ New round started!');
-
-      // ✅ Use data directly instead of waiting for socket or refetch
-      setGameState((prev) => ({
-        ...prev,
-        currentRound: data.currentRound,
-        currentLetter: data.currentLetter,
-      }));
-
-      console.log("✅ Letter received from /next-round:", data.currentLetter);
+      // Do not set gameState manually — let the socket update all players
     } catch (err) {
       console.error('❌ handleNextRound error:', err);
       setMessage('❌ An error occurred.');
@@ -117,18 +89,31 @@ function GameBoard({ gameState, setGameState, playerName, answers, setAnswers, s
     }
   };
 
-
   useEffect(() => {
-    const handleRoundStarted = ({ letter }) => {
-      // ✅ Save the letter into gameState for consistent display
-      setGameState((prev) => ({ ...prev, currentLetter: letter }));
+    const handleRoundStarted = ({ letter, currentRound }) => {
+      console.log(`📡 roundStarted received`, { letter, currentRound });
+      setGameState((prev) => ({
+        ...prev,
+        currentLetter: letter,
+        currentRound: currentRound ?? prev.currentRound,
+      }));
+      setSubmitted(false);
+      setAnswers({});
+      setSubmissions({});
+      setMessage(`🔤 Round ${currentRound} started with letter "${letter}"`);
     };
 
     socket.on('roundStarted', handleRoundStarted);
-    return () => socket.off('roundStarted', handleRoundStarted);
-  }, [setGameState]);
 
-  console.log("🕵️ gameState.currentRound =", gameState.currentRound);
+    socket.onAny((event, data) => {
+      console.log(`[${playerName}] Event received:`, event, data);
+    });
+
+    return () => {
+      socket.off('roundStarted', handleRoundStarted);
+      socket.offAny();
+    };
+  }, []);
 
   const getCategoryEmoji = (category) => {
     switch (category) {
@@ -209,16 +194,15 @@ function GameBoard({ gameState, setGameState, playerName, answers, setAnswers, s
       )}
 
       {gameState.host === playerName && (
-        <button
-          className="next-round-button"
-          onClick={handleNextRound}
-          disabled={roundInProgress || (gameState.currentRound > 0 && !submitted)}
-        >
-          ➡️ {gameState.currentRound === 0 ? 'Start Round' : 'Next Round'}
-        </button>
+  <button
+    className="next-round-button"
+    onClick={handleNextRound}
+    disabled={roundInProgress}
+  >
+    ➡️ {gameState.currentLetter === null ? 'Start Round' : 'Next Round'}
+  </button>
+)}
 
-
-      )}
     </div>
   );
 }

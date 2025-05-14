@@ -259,7 +259,11 @@ app.post('/next-round', async (req, res) => {
   if (!gameRoom.gameStarted) return handleError(res, "❌ Game has not started.");
   if (gameRoom.host !== playerName) return handleError(res, "❌ Only the host can start the round.");
 
-  gameRoom.currentRound += 1;
+  // ✅ Only increment if letter already exists (i.e. it's not the first round)
+  if (gameRoom.currentLetter !== null) {
+    gameRoom.currentRound += 1;
+  }
+
   gameRoom.currentLetter = getRandomLetter();
   gameRoom.submissions = {};
 
@@ -269,6 +273,7 @@ app.post('/next-round', async (req, res) => {
     letter: gameRoom.currentLetter,
     currentRound: gameRoom.currentRound,
   });
+
   res.status(200).json({
     success: true,
     message: "➡️ New round started.",
@@ -276,6 +281,7 @@ app.post('/next-round', async (req, res) => {
     currentLetter: gameRoom.currentLetter,
   });
 });
+
 
 app.get('/get-game', (req, res) => {
   const { gameId } = req.query;

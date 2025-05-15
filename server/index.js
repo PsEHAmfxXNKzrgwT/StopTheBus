@@ -87,9 +87,18 @@ loadGameRooms()
   .then(data => { gameRooms = data; })
   .catch(err => console.error('Error loading game rooms:', err));
 
+// function generateShortGameId() {
+//   return uuidv4();
+// }
+
 function generateShortGameId() {
-  return uuidv4();
+  let id;
+  do {
+    id = Math.floor(1000 + Math.random() * 9000).toString(); // 4-digit number
+  } while (gameRooms[id]); // ensure uniqueness
+  return id;
 }
+
 
 function getRandomLetter() {
   const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';

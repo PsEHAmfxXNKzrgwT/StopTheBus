@@ -496,6 +496,50 @@
       "test2": 0
     }
   },
+  "9644": {
+    "gameId": "9644",
+    "players": [
+      "test",
+      "test2"
+    ],
+    "host": "test",
+    "gameStarted": true,
+    "currentRound": 1,
+    "currentLetter": "J",
+    "categories": [
+      "Boy",
+      "Girl",
+      "Country",
+      "Food",
+      "Colour",
+      "Car",
+      "Movie / TV Show"
+    ],
+    "submissions": {
+      "test": {
+        "Boy": "john",
+        "Girl": "john",
+        "Country": "john",
+        "Food": "john",
+        "Colour": "john",
+        "Car": "john",
+        "Movie / TV Show": "john"
+      },
+      "test2": {
+        "Boy": "jason",
+        "Girl": "jason",
+        "Country": "jason",
+        "Food": "jason",
+        "Colour": "jason",
+        "Car": "jason",
+        "Movie / TV Show": "jason"
+      }
+    },
+    "scores": {
+      "test": 0,
+      "test2": 0
+    }
+  },
   "9845": {
     "gameId": "9845",
     "players": [
@@ -3006,6 +3050,29 @@
     "gameStarted": true,
     "currentRound": 1,
     "currentLetter": "B",
+    "categories": [
+      "Boy",
+      "Girl",
+      "Country",
+      "Food",
+      "Colour",
+      "Car",
+      "Movie / TV Show"
+    ],
+    "submissions": {},
+    "scores": {
+      "test": 0
+    }
+  },
+  "4e874818-77e5-4e48-99a7-c32f324fcdaa": {
+    "gameId": "4e874818-77e5-4e48-99a7-c32f324fcdaa",
+    "players": [
+      "test"
+    ],
+    "host": "test",
+    "gameStarted": false,
+    "currentRound": 0,
+    "currentLetter": null,
     "categories": [
       "Boy",
       "Girl",

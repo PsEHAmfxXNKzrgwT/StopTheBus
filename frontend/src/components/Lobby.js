@@ -1,5 +1,6 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import socket from '../socket';
+import CategorySelector from './CategorySelector';
 
 function Lobby({
   playerName,
@@ -11,10 +12,13 @@ function Lobby({
   setMessage,
   handleStartGame,
 }) {
+  const [selectedCategories, setSelectedCategories] = useState([]);
+  const BASE_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:6464';
+
   const handleCreateGame = async () => {
     if (!playerName) return setMessage("❌ Please enter a player name.");
     try {
-      const res = await fetch('http://localhost:6464/create-game', {
+      const res = await fetch(`${BASE_URL}/create-game`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ playerName }),
@@ -41,7 +45,7 @@ function Lobby({
     }
 
     try {
-      const res = await fetch('http://localhost:6464/join-game', {
+      const res = await fetch(`${BASE_URL}/join-game`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ gameId: gameIdInput, playerName }),
@@ -62,7 +66,32 @@ function Lobby({
     }
   };
 
-  // ✅ Emit joinGame when gameId and playerName are ready (applies to host and players)
+  const saveCategories = async () => {
+    if (!selectedCategories.length) {
+      return setMessage("❌ Please select at least one category.");
+    }
+
+    try {
+      await fetch(`${BASE_URL}/set-categories`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          gameId: gameState.gameId,
+          categories: selectedCategories,
+          playerName,
+        }),
+      });
+      setMessage("✅ Categories saved!");
+    } catch {
+      setMessage("❌ Failed to save categories.");
+    }
+  };
+
+  const startGameWithCategories = async () => {
+    await saveCategories();
+    handleStartGame();
+  };
+
   useEffect(() => {
     if (gameState.gameId && playerName) {
       socket.emit('joinGame', {
@@ -72,7 +101,6 @@ function Lobby({
     }
   }, [gameState.gameId, playerName]);
 
-  // 👂 Listen for playerJoined socket event
   useEffect(() => {
     socket.on('playerJoined', (updatedGameRoom) => {
       setGameState((prev) => ({
@@ -85,7 +113,6 @@ function Lobby({
     return () => socket.off('playerJoined');
   }, [setGameState]);
 
-  // 👂 Listen for gameStarted socket event
   useEffect(() => {
     socket.on('gameStarted', (updatedGameRoom) => {
       setGameState(updatedGameRoom);
@@ -123,7 +150,10 @@ function Lobby({
           </ul>
 
           {gameState.host === playerName && (
-            <button onClick={handleStartGame}>▶️ Start Game</button>
+            <>
+              <CategorySelector onSubmit={setSelectedCategories} />
+              <button onClick={startGameWithCategories}>▶️ Start Game</button>
+            </>
           )}
         </>
       )}

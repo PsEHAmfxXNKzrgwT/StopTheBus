@@ -118,16 +118,16 @@ app.post('/create-game', async (req, res) => {
   const newGameId = generateShortGameId();
 
   gameRooms[newGameId] = {
-    gameId: newGameId,
-    players: [playerName],
-    host: playerName,
-    gameStarted: false,
-    currentRound: 0,
-    currentLetter: null,
-    categories: ['Boy', 'Girl', 'Country', 'Food', 'Colour', 'Car', 'Movie / TV Show'],
-    submissions: {},
-    scores: { [playerName]: 0 },
-  };
+  gameId: newGameId,
+  players: [playerName],
+  host: playerName,
+  gameStarted: false,
+  currentRound: 0,
+  currentLetter: null,
+  categories: [], // ✅ start empty
+  submissions: {},
+  scores: { [playerName]: 0 },
+};
 
   await saveGameRooms();
 
@@ -138,6 +138,20 @@ app.post('/create-game', async (req, res) => {
     host: playerName,
   });
 });
+
+app.post('/set-categories', (req, res) => {
+  const { gameId, categories, playerName } = req.body;
+  const gameRoom = gameRooms[gameId];
+
+  
+
+  if (!gameRoom) return res.status(404).json({ error: 'Game not found' });
+  if (gameRoom.host !== playerName) return res.status(403).json({ error: 'Only the host can set categories' });
+
+  gameRoom.categories = categories; // ✅ Must save this!
+  res.json({ success: true, message: '✅ Categories saved' });
+});
+
 
 app.post('/join-game', async (req, res) => {
   const { gameId, playerName } = req.body;
@@ -178,6 +192,7 @@ app.post('/start-game', async (req, res) => {
   await saveGameRooms();
 
   io.to(gameId).emit('gameStarted', gameRoom); // ✅ send to all
+  console.log(`🚦 Starting game ${gameId} with categories:`, gameRoom.categories);
 
   res.status(200).json({
     success: true,

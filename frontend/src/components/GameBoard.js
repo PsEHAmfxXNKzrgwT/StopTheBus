@@ -8,6 +8,26 @@ function GameBoard({ gameState, setGameState, playerName, answers, setAnswers, s
   const [roundInProgress, setRoundInProgress] = useState(false);
   const BASE_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:6464';
 
+  // ✅ Fetch latest categories when game loads
+  useEffect(() => {
+    const fetchGameState = async () => {
+      try {
+        const res = await fetch(`${BASE_URL}/get-game?gameId=${gameState.gameId}`);
+        const data = await res.json();
+        if (res.ok && data.categories) {
+          setGameState((prev) => ({
+            ...prev,
+            categories: data.categories,
+          }));
+        }
+      } catch (err) {
+        console.error("❌ Failed to fetch game state:", err);
+      }
+    };
+
+    fetchGameState();
+  }, [gameState.gameId, setGameState]);
+
   const handleChange = (category, value) => {
     setAnswers((prev) => ({ ...prev, [category]: value }));
   };
@@ -80,7 +100,6 @@ function GameBoard({ gameState, setGameState, playerName, answers, setAnswers, s
       setSubmitted(false);
       setAnswers({});
       setMessage('➡️ New round started!');
-      // Do not set gameState manually — let the socket update all players
     } catch (err) {
       console.error('❌ handleNextRound error:', err);
       setMessage('❌ An error occurred.');
@@ -194,15 +213,14 @@ function GameBoard({ gameState, setGameState, playerName, answers, setAnswers, s
       )}
 
       {gameState.host === playerName && (
-  <button
-    className="next-round-button"
-    onClick={handleNextRound}
-    disabled={roundInProgress}
-  >
-    ➡️ {gameState.currentLetter === null ? 'Start Round' : 'Next Round'}
-  </button>
-)}
-
+        <button
+          className="next-round-button"
+          onClick={handleNextRound}
+          disabled={roundInProgress}
+        >
+          ➡️ {gameState.currentLetter === null ? 'Start Round' : 'Next Round'}
+        </button>
+      )}
     </div>
   );
 }

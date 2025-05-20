@@ -42,7 +42,26 @@ io.on('connection', (socket) => {
       io.to(gameId).emit('playerJoined', gameRoom); // ✅ always emit
     }
 
+
+
+  })
+
+  socket.on('scoreRound', ({ gameId }) => {
+    const gameRoom = gameRooms[gameId];
+    if (!gameRoom) return;
+
+    const scores = calculateScores(gameRoom);
+
+    io.to(gameId).emit('scoresUpdated', {
+      scores: gameRoom.scores,
+      round: gameRoom.currentRound
+    });
+
+    console.log(`🧮 Scores calculated for game ${gameId}:`, scores);
   });
+
+
+  ;
 
   socket.on('disconnect', () => {
     console.log('❌ Socket disconnected:', socket.id);
@@ -118,16 +137,16 @@ app.post('/create-game', async (req, res) => {
   const newGameId = generateShortGameId();
 
   gameRooms[newGameId] = {
-  gameId: newGameId,
-  players: [playerName],
-  host: playerName,
-  gameStarted: false,
-  currentRound: 0,
-  currentLetter: null,
-  categories: [], // ✅ start empty
-  submissions: {},
-  scores: { [playerName]: 0 },
-};
+    gameId: newGameId,
+    players: [playerName],
+    host: playerName,
+    gameStarted: false,
+    currentRound: 0,
+    currentLetter: null,
+    categories: [], // ✅ start empty
+    submissions: {},
+    scores: { [playerName]: 0 },
+  };
 
   await saveGameRooms();
 
@@ -143,7 +162,7 @@ app.post('/set-categories', (req, res) => {
   const { gameId, categories, playerName } = req.body;
   const gameRoom = gameRooms[gameId];
 
-  
+
 
   if (!gameRoom) return res.status(404).json({ error: 'Game not found' });
   if (gameRoom.host !== playerName) return res.status(403).json({ error: 'Only the host can set categories' });
@@ -274,6 +293,49 @@ app.post('/update-score', async (req, res) => {
     scores: gameRoom.scores
   });
 });
+
+function calculateScores(gameRoom) {
+  const playerAnswers = gameRoom.submissions; // { playerName: { category: answer, ... }, ... }
+  const categories = gameRoom.categories;
+  const scores = {};
+
+  // Initialize scores
+  for (const player in playerAnswers) {
+    scores[player] = 0;
+  }
+
+  // Evaluate each category
+  for (const category of categories) {
+    const answerMap = {}; // normalized answer => [players]
+
+    // Build answerMap for this category
+    for (const player in playerAnswers) {
+      const rawAnswer = playerAnswers[player][category] || '';
+      const answer = rawAnswer.trim().toLowerCase();
+
+      if (!answer) continue;
+
+      if (!answerMap[answer]) answerMap[answer] = [];
+      answerMap[answer].push(player);
+    }
+
+    // Award points
+    for (const [answer, players] of Object.entries(answerMap)) {
+      const points = players.length > 1 ? 5 : 10;
+      players.forEach(p => {
+        scores[p] += points;
+      });
+    }
+  }
+
+  // Update gameRoom scores
+  for (const player in scores) {
+    gameRoom.scores[player] += scores[player];
+  }
+
+  return scores;
+}
+
 
 app.post('/next-round', async (req, res) => {
   const { gameId, playerName } = req.body;

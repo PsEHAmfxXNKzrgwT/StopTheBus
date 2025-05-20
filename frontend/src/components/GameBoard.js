@@ -134,19 +134,6 @@ function GameBoard({ gameState, setGameState, playerName, answers, setAnswers, s
     };
   }, []);
 
-  const getCategoryEmoji = (category) => {
-    switch (category) {
-      case 'Boy': return '👦';
-      case 'Girl': return '👧';
-      case 'Country': return '🌍';
-      case 'Food': return '🍽️';
-      case 'Colour': return '🎨';
-      case 'Car': return '🚗';
-      case 'Movie / TV Show': return '🎬';
-      default: return '❓';
-    }
-  };
-
   return (
     <div className="game-board">
       <h2>Round {gameState.currentRound}</h2>
@@ -175,30 +162,28 @@ function GameBoard({ gameState, setGameState, playerName, answers, setAnswers, s
 
       {submitted && (
         <div className="submission-score-wrapper">
-          <div className="submissions">
-            <h3>Submissions</h3>
-            {Object.entries(submissions).map(([player, ans], idx) => (
-              <div key={idx} className="submission-entry">
-                <strong>{player}</strong>
-                <table className="submission-table">
-                  <tbody>
-                    {Object.entries(ans).map(([cat, val]) => (
-                      <tr key={cat}>
-                        <td className="emoji">{getCategoryEmoji(cat)}</td>
-                        <td className="category-name"><strong>{cat}</strong></td>
-                        <td className="answer">{val}</td>
-                      </tr>
+          <div className="answer-grid">
+            <h3>All Answers</h3>
+            <table>
+              <thead>
+                <tr>
+                  <th>Player</th>
+                  {gameState.categories.map((cat) => (
+                    <th key={cat}>{cat}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {Object.entries(submissions).map(([player, answers]) => (
+                  <tr key={player}>
+                    <td><strong>{player}</strong></td>
+                    {gameState.categories.map((cat) => (
+                      <td key={cat}>{answers[cat] || '-'}</td>
                     ))}
-                  </tbody>
-                </table>
-                {gameState.host === playerName && (
-                  <div className="score-controls">
-                    <button onClick={() => handleUpdateScore(player, 1)}>+1</button>
-                    <button onClick={() => handleUpdateScore(player, -1)}>-1</button>
-                  </div>
-                )}
-              </div>
-            ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
 
           <div className="scores">
@@ -219,6 +204,12 @@ function GameBoard({ gameState, setGameState, playerName, answers, setAnswers, s
           disabled={roundInProgress}
         >
           ➡️ {gameState.currentLetter === null ? 'Start Round' : 'Next Round'}
+        </button>
+      )}
+
+      {gameState.host === playerName && (
+        <button onClick={() => socket.emit('scoreRound', { gameId: gameState.gameId })}>
+          Score Round
         </button>
       )}
     </div>

@@ -40,3 +40,45 @@
   margin-bottom: 15px;
   padding-bottom: 10px;
 }
+
+.answer-grid {
+  margin-top: 20px;
+  overflow-x: auto;
+  padding: 10px;
+}
+
+.answer-grid table {
+  border-collapse: collapse;
+  width: 100%;
+  min-width: 600px;
+  text-align: center;
+  background-color: #fff;
+  box-shadow: 0 0 4px rgba(0,0,0,0.1);
+}
+
+.answer-grid th,
+.answer-grid td {
+  border: 1px solid #ccc;
+  padding: 8px 12px;
+  font-size: 14px;
+}
+
+.answer-grid th {
+  background-color: #f4f4f4;
+  font-weight: bold;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.answer-grid tr:nth-child(even) {
+  background-color: #fafafa;
+}
+
+.answer-grid td:first-child,
+.answer-grid th:first-child {
+  background-color: #f9f9f9;
+  font-weight: bold;
+  text-align: left;
+}
+

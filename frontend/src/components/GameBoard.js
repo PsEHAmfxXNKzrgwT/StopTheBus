@@ -9,7 +9,6 @@ function GameBoard({ gameState, setGameState, playerName, answers, setAnswers, s
   const [visibleCategories, setVisibleCategories] = useState([]);
   const BASE_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:6464';
 
-  // ✅ Fetch latest categories when game loads
   useEffect(() => {
     const fetchGameState = async () => {
       try {
@@ -25,7 +24,6 @@ function GameBoard({ gameState, setGameState, playerName, answers, setAnswers, s
         console.error("❌ Failed to fetch game state:", err);
       }
     };
-
     fetchGameState();
   }, [gameState.gameId, setGameState]);
 
@@ -58,7 +56,6 @@ function GameBoard({ gameState, setGameState, playerName, answers, setAnswers, s
     socket.on('submissionsUpdated', (data) => {
       setSubmissions(data);
     });
-
     return () => {
       socket.off('submissionsUpdated');
     };
@@ -85,7 +82,6 @@ function GameBoard({ gameState, setGameState, playerName, answers, setAnswers, s
   const handleNextRound = async () => {
     if (roundInProgress) return;
     setRoundInProgress(true);
-
     try {
       const res = await fetch(`${BASE_URL}/next-round`, {
         method: 'POST',
@@ -95,13 +91,10 @@ function GameBoard({ gameState, setGameState, playerName, answers, setAnswers, s
           playerName,
         }),
       });
-
       const data = await res.json();
-
       if (!res.ok) {
         return setMessage(data.message || '❌ Failed to move to next round.');
       }
-
       setSubmitted(false);
       setAnswers({});
       setVisibleCategories([]);
@@ -116,7 +109,6 @@ function GameBoard({ gameState, setGameState, playerName, answers, setAnswers, s
 
   useEffect(() => {
     const handleRoundStarted = ({ letter, currentRound }) => {
-      console.log(`📡 roundStarted received`, { letter, currentRound });
       setGameState((prev) => ({
         ...prev,
         currentLetter: letter,
@@ -128,23 +120,29 @@ function GameBoard({ gameState, setGameState, playerName, answers, setAnswers, s
       setVisibleCategories([]);
       setMessage(`🔤 Round ${currentRound} started with letter "${letter}"`);
     };
-
     socket.on('roundStarted', handleRoundStarted);
-
-    socket.onAny((event, data) => {
-      console.log(`[${playerName}] Event received:`, event, data);
-    });
-
     return () => {
       socket.off('roundStarted', handleRoundStarted);
-      socket.offAny();
     };
   }, []);
+
+  const isHost = gameState.host === playerName;
+  const canControlRound = isHost && !roundInProgress && gameState.currentLetter === null;
+  const canScore = isHost && !roundInProgress && submitted;
 
   return (
     <div className="game-board">
       <h2>Round {gameState.currentRound}</h2>
       <h3>Letter: {gameState.currentLetter || 'Waiting...'}</h3>
+
+      {canControlRound && (
+        <button
+          className="next-round-button"
+          onClick={handleNextRound}
+        >
+          🎬 Start Round
+        </button>
+      )}
 
       {!submitted && (
         <>
@@ -160,7 +158,6 @@ function GameBoard({ gameState, setGameState, playerName, answers, setAnswers, s
               </div>
             ))}
           </div>
-
           <button className="submit-button" onClick={handleSubmit}>
             ✅ Submit Answers
           </button>
@@ -206,33 +203,28 @@ function GameBoard({ gameState, setGameState, playerName, answers, setAnswers, s
         </div>
       )}
 
-      {gameState.host === playerName && !roundInProgress && submitted && (
-        <button
-          className="next-round-button"
-          onClick={handleNextRound}
-        >
-          ➡️ {gameState.currentLetter === null ? 'Start Round' : 'Next Round'}
-        </button>
-      )}
-
-      {gameState.host === playerName && !roundInProgress && submitted && (
+      {canScore && (
         <div style={{ marginTop: '10px' }}>
           <button onClick={() => {
             socket.emit('scoreRound', { gameId: gameState.gameId });
-            setVisibleCategories(gameState.categories); // show all at once
+            setVisibleCategories(gameState.categories);
           }}>
             🧮 Score Entire Round
           </button>
-
           <button onClick={() => {
             const next = gameState.categories.find(cat => !visibleCategories.includes(cat));
             if (next) setVisibleCategories([...visibleCategories, next]);
           }}>
             ➕ Reveal Next Category
           </button>
+          <button
+            className="next-round-button"
+            onClick={handleNextRound}
+          >
+            ➡️ Next Round
+          </button>
         </div>
       )}
-
     </div>
   );
 }

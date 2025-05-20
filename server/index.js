@@ -46,6 +46,15 @@ io.on('connection', (socket) => {
 
   })
 
+  socket.on('revealAllCategories', ({ gameId }) => {
+  io.to(gameId).emit('revealAllCategories');
+});
+
+socket.on('revealNextCategory', ({ gameId, category }) => {
+  io.to(gameId).emit('revealNextCategory', category);
+});
+
+
   socket.on('scoreRound', ({ gameId }) => {
     const gameRoom = gameRooms[gameId];
     if (!gameRoom) return;

@@ -32,7 +32,22 @@ function GameBoard({ gameState, setGameState, playerName, answers, setAnswers, s
   };
 
   const handleSubmit = async () => {
-    if (submitted) return setMessage('✅ Already submitted!');
+  if (submitted) return setMessage('✅ Already submitted!');
+
+  const currentLetter = gameState.currentLetter?.toUpperCase?.();
+  if (!currentLetter) return setMessage("⚠️ No letter set for this round.");
+
+  // Check all answers start with the correct letter
+  const invalidEntries = Object.entries(answers).filter(([_, answer]) => {
+    return answer.trim().charAt(0).toUpperCase() !== currentLetter;
+  });
+
+  if (invalidEntries.length > 0) {
+    setMessage(`🚫 All answers must start with "${currentLetter}"!`);
+    return;
+  }
+
+  try {
     const res = await fetch(`${BASE_URL}/submit-answers`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -42,15 +57,21 @@ function GameBoard({ gameState, setGameState, playerName, answers, setAnswers, s
         answers,
       }),
     });
-    const data = await res.json();
+
     if (res.ok) {
       setSubmitted(true);
-      setMessage('✅ Answers submitted!');
-      socket.emit('fetchSubmissions', { gameId: gameState.gameId });
+      setMessage("✅ Answers submitted!");
+      socket.emit('answersSubmitted', { gameId: gameState.gameId, playerName });
     } else {
-      setMessage(data.message || '❌ Submission failed.');
+      const data = await res.json();
+      setMessage(`❌ ${data.message || 'Error submitting answers.'}`);
     }
-  };
+  } catch (err) {
+    console.error("❌ Submit error:", err);
+    setMessage("❌ Network error submitting answers.");
+  }
+};
+
 
   useEffect(() => {
     socket.on('submissionsUpdated', (data) => {
